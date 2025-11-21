@@ -1,5 +1,5 @@
 from typing import List
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 
 class Chunker:
     def __init__(self, chunk_size: int = 500, overlap: int = 50):
@@ -53,6 +53,7 @@ class EmbeddingModel:
     def encode(self, texts: List[str]) -> List[List[float]]:
         if self._model is None:
             print(f"Lazy loading embedding model: {self.model_name}...")
+            from sentence_transformers import SentenceTransformer
             self._model = SentenceTransformer(self.model_name)
             print("Model loaded.")
             

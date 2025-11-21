@@ -1,4 +1,4 @@
-from qdrant_client import QdrantClient
+# from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from app.core.config import settings
 from typing import List, Dict, Any
@@ -14,6 +14,7 @@ class VectorDB:
             return self.client
             
         # Use settings for Qdrant configuration (Cloud or Local)
+        from qdrant_client import QdrantClient
         if settings.QDRANT_URL and settings.QDRANT_URL != ":memory:":
             self.client = QdrantClient(
                 url=settings.QDRANT_URL,
