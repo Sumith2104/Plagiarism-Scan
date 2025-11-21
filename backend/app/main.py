@@ -9,13 +9,20 @@ app = FastAPI(
 @app.on_event("startup")
 def startup_event():
     import subprocess
+    from app.db.session import engine
+    from app.models import Base
+    
     try:
-        print("DEBUG: Starting database migrations...")
-        print("DEBUG: Checking alembic version...")
+        print("DEBUG: Starting database setup...")
+        # Failsafe: Create tables directly if they don't exist
+        Base.metadata.create_all(bind=engine)
+        print("DEBUG: Direct table creation completed.")
+        
+        print("DEBUG: Running alembic migrations...")
         subprocess.run(["alembic", "upgrade", "head"], check=True)
         print("Database migrations completed successfully.")
     except Exception as e:
-        print(f"Migration failed: {e}")
+        print(f"Migration/Setup failed: {e}")
         # We don't raise here to allow app to start even if migration fails (e.g. local dev)
 
 
