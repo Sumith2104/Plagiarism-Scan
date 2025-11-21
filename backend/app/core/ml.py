@@ -53,8 +53,16 @@ class EmbeddingModel:
     def encode(self, texts: List[str]) -> List[List[float]]:
         if self._model is None:
             print(f"Lazy loading embedding model: {self.model_name}...")
-            from sentence_transformers import SentenceTransformer
-            self._model = SentenceTransformer(self.model_name)
-            print("Model loaded.")
+            try:
+                import gc
+                gc.collect() # Free up memory before loading
+                
+                from sentence_transformers import SentenceTransformer
+                self._model = SentenceTransformer(self.model_name)
+                print("Model loaded successfully.")
+            except Exception as e:
+                print(f"CRITICAL ERROR: Failed to load ML model: {e}")
+                # Fallback or re-raise? For now, let's re-raise but log it.
+                raise e
             
         return self._model.encode(texts).tolist()

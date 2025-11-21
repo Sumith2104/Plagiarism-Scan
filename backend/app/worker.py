@@ -28,11 +28,15 @@ def process_document(document_id: int):
         print(f"Extracting text for {doc.filename}...")
         try:
             # 1. Extraction
+            print(f"DEBUG: Starting extraction for {doc.filename}...")
             raw_text = TextExtractor.extract(doc.file_path, doc.content_type)
+            print(f"DEBUG: Extraction complete. Length: {len(raw_text)}")
+            
             cleaned_text = TextCleaner.clean(raw_text)
             doc.extracted_text = cleaned_text
             
             # 2. Lexical Fingerprinting (MinHash)
+            print("DEBUG: Generating fingerprint...")
             fingerprinter = LexicalFingerprint()
             signature = fingerprinter.generate_fingerprint(cleaned_text)
             
@@ -42,17 +46,24 @@ def process_document(document_id: int):
             doc.meta_data = meta
             
             # 3. Chunking
+            print("DEBUG: Chunking text...")
             chunker = Chunker()
             chunks = chunker.chunk_text(cleaned_text)
+            print(f"DEBUG: Generated {len(chunks)} chunks.")
             
             if chunks:
                 # 4. Embedding
+                print("DEBUG: Loading Embedding Model (this might take a while)...")
                 model = EmbeddingModel.get_instance()
+                print("DEBUG: Model loaded. Encoding chunks...")
                 embeddings = model.encode(chunks)
+                print("DEBUG: Encoding complete.")
                 
                 # 5. Indexing
+                print("DEBUG: Indexing to Qdrant...")
                 vdb = VectorDB()
                 vdb.upsert_chunks(doc.id, chunks, embeddings)
+                print("DEBUG: Indexing complete.")
                 
                 doc.status = DocStatus.INDEXED
             else:
