@@ -6,8 +6,15 @@ import uuid
 
 class VectorDB:
     def __init__(self):
-        # Use local disk storage for persistence
-        self.client = QdrantClient(path="qdrant_storage")
+        # Use settings for Qdrant configuration (Cloud or Local)
+        if settings.QDRANT_URL and settings.QDRANT_URL != ":memory:":
+            self.client = QdrantClient(
+                url=settings.QDRANT_URL,
+                api_key=settings.QDRANT_API_KEY
+            )
+        else:
+            # Fallback to local storage if no URL provided
+            self.client = QdrantClient(path="qdrant_storage")
         self.collection_name = "plagiascan_chunks"
         self._ensure_collection()
 

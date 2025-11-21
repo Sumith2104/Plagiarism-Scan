@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     
     # QDRANT_URL: str = "http://localhost:6333"
     QDRANT_URL: str = ":memory:" # or path to local file
+    QDRANT_API_KEY: Optional[str] = None
     
     SECRET_KEY: str = "supersecretkey" # Change in production
     ALGORITHM: str = "HS256"

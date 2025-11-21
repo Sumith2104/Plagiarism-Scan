@@ -19,6 +19,8 @@ pypdf==3.17.1
 beautifulsoup4==4.12.2
 pytesseract==0.3.10
 Pillow==10.1.0
-python-magic-bin==0.4.14
+python-magic==0.4.27
+transformers
+torch
 pytest==7.4.3
 datasketch==1.6.4
