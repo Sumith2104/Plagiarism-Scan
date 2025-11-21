@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+build/
+
+# Environment Variables
+.env
+.env.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project Specific
+uploads/
+backend/qdrant_storage/
+backend/plagiascan.db
+backend/check_vectors.py
+backend/download_model.py
+backend/debug_qdrant.py
+
+# OS
+.DS_Store
+Thumbs.db
