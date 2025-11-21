@@ -6,6 +6,18 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
+@app.on_event("startup")
+def startup_event():
+    import subprocess
+    try:
+        print("Running database migrations...")
+        subprocess.run(["alembic", "upgrade", "head"], check=True)
+        print("Database migrations completed successfully.")
+    except Exception as e:
+        print(f"Migration failed: {e}")
+        # We don't raise here to allow app to start even if migration fails (e.g. local dev)
+
+
 from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
