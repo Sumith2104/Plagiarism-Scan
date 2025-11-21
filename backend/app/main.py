@@ -10,7 +10,8 @@ app = FastAPI(
 def startup_event():
     import subprocess
     try:
-        print("Running database migrations...")
+        print("DEBUG: Starting database migrations...")
+        print("DEBUG: Checking alembic version...")
         subprocess.run(["alembic", "upgrade", "head"], check=True)
         print("Database migrations completed successfully.")
     except Exception as e:
