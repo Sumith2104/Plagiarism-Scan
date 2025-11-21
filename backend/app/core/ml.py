@@ -46,10 +46,14 @@ class EmbeddingModel:
         return cls._instance
 
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
-        if self._model is None:
-            print(f"Loading embedding model: {model_name}...")
-            self._model = SentenceTransformer(model_name)
-            print("Model loaded.")
+        self.model_name = model_name
+        # Do NOT load model here to prevent blocking startup
+        # self._model is already None from class attribute
 
     def encode(self, texts: List[str]) -> List[List[float]]:
+        if self._model is None:
+            print(f"Lazy loading embedding model: {self.model_name}...")
+            self._model = SentenceTransformer(self.model_name)
+            print("Model loaded.")
+            
         return self._model.encode(texts).tolist()
