@@ -6,6 +6,13 @@ import uuid
 
 class VectorDB:
     def __init__(self):
+        self.client = None
+        self.collection_name = "plagiascan_chunks"
+
+    def _get_client(self):
+        if self.client:
+            return self.client
+            
         # Use settings for Qdrant configuration (Cloud or Local)
         if settings.QDRANT_URL and settings.QDRANT_URL != ":memory:":
             self.client = QdrantClient(
@@ -15,8 +22,9 @@ class VectorDB:
         else:
             # Fallback to local storage if no URL provided
             self.client = QdrantClient(path="qdrant_storage")
-        self.collection_name = "plagiascan_chunks"
+            
         self._ensure_collection()
+        return self.client
 
     def _ensure_collection(self):
         try:
@@ -29,6 +37,7 @@ class VectorDB:
             )
 
     def upsert_chunks(self, document_id: int, chunks: List[str], embeddings: List[List[float]]):
+        client = self._get_client()
         points = []
         for i, (chunk, vector) in enumerate(zip(chunks, embeddings)):
             point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{document_id}_{i}"))
@@ -42,16 +51,17 @@ class VectorDB:
                 }
             ))
         
-        self.client.upsert(
+        client.upsert(
             collection_name=self.collection_name,
             points=points
         )
         print(f"Upserted {len(points)} chunks for document {document_id}")
 
     def search(self, vector: List[float], limit: int = 5, score_threshold: float = 0.7) -> List[Dict[str, Any]]:
+        client = self._get_client()
         try:
             # Try using search first (standard API)
-            results = self.client.search(
+            results = client.search(
                 collection_name=self.collection_name,
                 query_vector=vector,
                 limit=limit,
@@ -59,7 +69,7 @@ class VectorDB:
             )
         except AttributeError:
             # Fallback to query_points (newer API or specific to local mode)
-            response = self.client.query_points(
+            response = client.query_points(
                 collection_name=self.collection_name,
                 query=vector,
                 limit=limit,
@@ -80,6 +90,7 @@ class VectorDB:
 
     def delete_document(self, document_id: int):
         """Delete all chunks associated with a document"""
+        client = self._get_client()
         try:
             # Create filter for document_id
             filter_condition = models.Filter(
@@ -91,7 +102,7 @@ class VectorDB:
                 ]
             )
             
-            self.client.delete(
+            client.delete(
                 collection_name=self.collection_name,
                 points_selector=models.FilterSelector(
                     filter=filter_condition
