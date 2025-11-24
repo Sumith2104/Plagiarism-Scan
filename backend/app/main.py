@@ -14,15 +14,22 @@ def startup_event():
     
     try:
         print("DEBUG: Starting database setup...")
-        # Failsafe: Create tables directly if they don't exist
-        Base.metadata.create_all(bind=engine)
-        print("DEBUG: Direct table creation completed.")
         
-        print("DEBUG: Running alembic migrations...")
-        subprocess.run(["alembic", "upgrade", "head"], check=True)
-        print("Database migrations completed successfully.")
+        # 1. Try Alembic Migrations first (Best Practice)
+        try:
+            print("DEBUG: Running alembic migrations...")
+            subprocess.run(["alembic", "upgrade", "head"], check=True)
+            print("Database migrations completed successfully.")
+        except Exception as e:
+            print(f"Alembic migration failed: {e}")
+            print("DEBUG: Falling back to direct table creation...")
+            
+            # 2. Failsafe: Create tables directly if Alembic failed
+            Base.metadata.create_all(bind=engine)
+            print("DEBUG: Direct table creation completed.")
+            
     except Exception as e:
-        print(f"Migration/Setup failed: {e}")
+        print(f"Critical Database Setup Failed: {e}")
         # We don't raise here to allow app to start even if migration fails (e.g. local dev)
 
 

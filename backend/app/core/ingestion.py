@@ -36,6 +36,12 @@ class TextExtractor:
             return TextExtractor._extract_text(file_path)
         elif 'image' in detected_type:
             return TextExtractor._extract_image(file_path)
+        # Source Code Support
+        elif any(ext in detected_type for ext in ['python', 'javascript', 'java', 'c++', 'c source', 'ruby', 'php', 'go', 'rust']):
+            return TextExtractor._extract_text(file_path)
+        # Fallback for common code extensions if magic fails
+        elif file_path.endswith(('.py', '.js', '.jsx', '.ts', '.tsx', '.java', '.cpp', '.c', '.h', '.cs', '.go', '.rs', '.php', '.rb')):
+             return TextExtractor._extract_text(file_path)
         else:
             # Last resort fallback for unknown types that might be text
             try:

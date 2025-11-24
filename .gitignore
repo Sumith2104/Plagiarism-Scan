@@ -34,3 +34,6 @@ backend/debug_qdrant.py
 # OS
 .DS_Store
 Thumbs.db
+
+# Secrets
+backend/firebase-credentials.json

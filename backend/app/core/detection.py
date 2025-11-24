@@ -11,6 +11,25 @@ class DetectionEngine:
         self.vector_db = VectorDB()
         self.chunker = Chunker()
         self.embedding_model = EmbeddingModel.get_instance()
+        import time
+        self.time = time
+
+    def _update_progress(self, scan_id: int, progress: int, message: str):
+        try:
+            # Use direct update to avoid session sync issues and ensure immediate commit
+            from sqlalchemy import update
+            stmt = (
+                update(Scan)
+                .where(Scan.id == scan_id)
+                .values(progress=progress, current_step=message)
+            )
+            self.db.execute(stmt)
+            self.db.commit()
+            
+            # Artificial delay for UX smoothness
+            self.time.sleep(0.5)
+        except Exception as e:
+            print(f"Failed to update progress: {e}")
 
     def run_scan(self, scan_id: int):
         scan = self.db.query(Scan).filter(Scan.id == scan_id).first()
@@ -21,20 +40,25 @@ class DetectionEngine:
         try:
             scan.status = ScanStatus.SCANNING
             self.db.commit()
+            
+            self._update_progress(scan_id, 0, "Initializing scan...")
 
             doc = scan.document
             if not doc or not doc.extracted_text:
                 raise ValueError("Document has no text to scan")
 
             # 1. Chunking
+            self._update_progress(scan_id, 10, "Chunking document...")
             chunks = self.chunker.chunk_text(doc.extracted_text)
             if not chunks:
                 raise ValueError("No chunks generated")
 
             # 2. Generate Embeddings for Query
+            self._update_progress(scan_id, 30, "Generating embeddings...")
             embeddings = self.embedding_model.encode(chunks)
 
             # 3. Semantic Search
+            self._update_progress(scan_id, 50, "Searching internal database...")
             matches = []
             total_similarity = 0.0
             matched_chunks_count = 0
@@ -74,9 +98,11 @@ class DetectionEngine:
                 overall_score = (matched_chunks_count / len(chunks)) * 100
 
             # 5. AI Detection (Heuristic)
+            self._update_progress(scan_id, 70, "Analyzing AI probability...")
             ai_analysis = self._detect_ai_content(doc.extracted_text)
 
             # 6. Update Scan Result
+            self._update_progress(scan_id, 90, "Finalizing report...")
             scan.overall_score = round(overall_score, 2)
             scan.report_data = {
                 "total_chunks": len(chunks),
@@ -85,6 +111,8 @@ class DetectionEngine:
                 "ai_detection": ai_analysis
             }
             scan.status = ScanStatus.COMPLETED
+            scan.progress = 100
+            scan.current_step = "Completed"
             self.db.commit()
             print(f"Scan {scan_id} completed. Score: {overall_score}")
 
@@ -112,9 +140,9 @@ class DetectionEngine:
                  return {"ai_probability": 0, "label": "Insufficient Data"}
 
             # Initialize pipeline (lazy load would be better for performance, but this is safer for now)
-            # Using a standard model for AI detection
-            # Note: First run will download the model (~500MB)
-            classifier = pipeline("text-classification", model="roberta-base-openai-detector")
+            # Using RoBERTa Large for better accuracy (Upgrade from Base)
+            # Note: First run will download the model (~1.4GB)
+            classifier = pipeline("text-classification", model="roberta-large-openai-detector")
             
             result = classifier(truncated_text)[0]
             # result is like {'label': 'Fake', 'score': 0.99} or {'label': 'Real', 'score': 0.99}
@@ -138,13 +166,96 @@ class DetectionEngine:
             else:
                 display_label = "Human"
 
+            # Advanced Analytics (Perplexity & Burstiness)
+            try:
+                from app.core.analytics import PerplexityAnalyzer
+                analyzer = PerplexityAnalyzer.get_instance()
+                analytics_scores = analyzer.calculate_scores(truncated_text)
+                perplexity = analytics_scores["perplexity"]
+                burstiness = analytics_scores["burstiness"]
+            except Exception as e:
+                print(f"Analytics failed: {e}")
+                perplexity = 0.0
+                burstiness = 0.0
+
+            # Web Plagiarism Search
+            web_sources = []
+            try:
+                from app.core.web_search import WebSearcher
+                searcher = WebSearcher.get_instance()
+                # Search using the first 500 chars or so to save time/bandwidth
+                web_sources = searcher.search_and_compare(truncated_text[:1000])
+            except Exception as e:
+                print(f"Web Search failed: {e}")
+
+            # --- ENSEMBLE LOGIC START ---
+            # 1. Normalize Scores to 0-100 Scale (where 100 = AI, 0 = Human)
+            
+            # Perplexity: Low (< 30) is AI, High (> 100) is Human
+            if perplexity < 30:
+                perp_ai_score = 100
+            elif perplexity < 60:
+                perp_ai_score = 80
+            elif perplexity < 100:
+                perp_ai_score = 40
+            else:
+                perp_ai_score = 0
+                
+            # Burstiness: Low (< 0.4) is AI, High (> 0.7) is Human
+            if burstiness < 0.4:
+                burst_ai_score = 100
+            elif burstiness < 0.6:
+                burst_ai_score = 60
+            elif burstiness < 0.8:
+                burst_ai_score = 30
+            else:
+                burst_ai_score = 0
+                
+            # 2. Weighted Average
+            # Weights: RoBERTa (60%), Perplexity (20%), Burstiness (20%)
+            # Note: ai_prob from RoBERTa is already 0-100
+            
+            w_roberta = 0.6
+            w_perp = 0.2
+            w_burst = 0.2
+            
+            final_ai_score = (ai_prob * w_roberta) + (perp_ai_score * w_perp) + (burst_ai_score * w_burst)
+            final_ai_score = round(final_ai_score, 2)
+            
+            # 3. Determine Label based on Final Score
+            if final_ai_score > 85:
+                display_label = "AI Generated"
+            elif final_ai_score > 60:
+                display_label = "Likely AI"
+            elif final_ai_score > 40:
+                display_label = "Mixed / Unsure"
+            else:
+                display_label = "Human"
+            # --- ENSEMBLE LOGIC END ---
+
+            # 4. Experimental LLM Check (Mistral-7B)
+            llm_result = {}
+            try:
+                from app.core.llm_checker import LLMChecker
+                llm = LLMChecker.get_instance()
+                if llm._model:
+                    print("DEBUG: Running Mistral-7B Analysis...")
+                    llm_result = llm.analyze_text(text)
+            except Exception as e:
+                print(f"LLM Check skipped: {e}")
+
             return {
-                "ai_probability": ai_prob,
+                "ai_probability": final_ai_score,
                 "label": display_label,
                 "details": {
-                    "model": "roberta-base-openai-detector",
-                    "raw_label": label,
-                    "confidence": round(score, 4)
+                    "model": "Ensemble (RoBERTa Large + Mistral-7B + Web)",
+                    "raw_roberta_score": ai_prob,
+                    "perplexity": perplexity,
+                    "burstiness": burstiness,
+                    "perp_ai_contribution": perp_ai_score,
+                    "burst_ai_contribution": burst_ai_score,
+                    "web_matches": web_sources,
+                    "llm_analysis": llm_result
                 }
             }
             
