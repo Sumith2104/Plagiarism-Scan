@@ -9,6 +9,7 @@ python-multipart
 celery==5.3.6
 redis==5.0.1
 qdrant-client
+fastembed
 sentence-transformers==2.2.2
 huggingface-hub>=0.23.0
 httpx==0.25.1

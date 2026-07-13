@@ -62,24 +62,20 @@ class EmbeddingModel:
             cls._instance = cls()
         return cls._instance
 
-    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
+    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
+        if model_name == "all-MiniLM-L6-v2":
+            model_name = "sentence-transformers/all-MiniLM-L6-v2"
         self.model_name = model_name
-        # Do NOT load model here to prevent blocking startup
-        # self._model is already None from class attribute
 
     def encode(self, texts: List[str]) -> List[List[float]]:
         if self._model is None:
-            print(f"Lazy loading embedding model: {self.model_name}...")
+            print(f"Lazy loading fastembed model: {self.model_name}...")
             try:
-                import gc
-                gc.collect() # Free up memory before loading
-                
-                from sentence_transformers import SentenceTransformer
-                self._model = SentenceTransformer(self.model_name)
-                print("Model loaded successfully.")
+                from fastembed import TextEmbedding
+                self._model = TextEmbedding(model_name=self.model_name)
+                print("fastembed model loaded successfully.")
             except Exception as e:
-                print(f"CRITICAL ERROR: Failed to load ML model: {e}")
-                # Fallback or re-raise? For now, let's re-raise but log it.
+                print(f"CRITICAL ERROR: Failed to load fastembed model: {e}")
                 raise e
             
-        return self._model.encode(texts).tolist()
+        return [arr.tolist() for arr in self._model.embed(texts)]
