@@ -1,7 +1,3 @@
-import os
-import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-
 class PlagiarismDetector:
     _instance = None
 
@@ -12,6 +8,7 @@ class PlagiarismDetector:
         return cls._instance
 
     def __init__(self):
+        import os
         # We expect the trained model to be saved here by the train.py script
         self.model_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../ai_model"))
         
@@ -19,6 +16,9 @@ class PlagiarismDetector:
         model_name = self.model_dir if os.path.exists(self.model_dir) else "microsoft/deberta-v3-small"
         
         try:
+            import torch
+            from transformers import AutoTokenizer, AutoModelForSequenceClassification
+            
             print(f"Loading Plagiarism Detection Model from: {model_name}")
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
             self.model = AutoModelForSequenceClassification.from_pretrained(
@@ -44,6 +44,7 @@ class PlagiarismDetector:
                 - label (str): "Not Plagiarized", "Partially Plagiarized", or "Highly Plagiarized"
                 - confidence (float): The model's confidence in its prediction
         """
+        import torch
         if not self.is_ready:
             return {
                 "score": 0.0,
