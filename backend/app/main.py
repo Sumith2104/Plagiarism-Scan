@@ -82,7 +82,7 @@ async def spa_404_handler(request, exc):
     index_file = os.path.join(FRONTEND_DIST_DIR, "index.html")
     if os.path.exists(index_file):
         return FileResponse(index_file)
-    return FileResponse(index_file)
+    return await http_exception_handler(request, exc)
 
 # Mount the static files directory at the root last
 if os.path.exists(FRONTEND_DIST_DIR):
