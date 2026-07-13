@@ -52,17 +52,19 @@ class FluxbaseClient:
                 headers=self._headers(),
                 timeout=30,
             )
+            if resp.status_code != 200:
+                print(f"Fluxbase Error HTTP {resp.status_code}: {resp.text}")
             resp.raise_for_status()
             data = resp.json()
         except requests.RequestException as e:
-            logger.error(f"Fluxbase network error: {e}")
+            print(f"Fluxbase network error: {e}")
             raise RuntimeError(f"Fluxbase network error: {e}") from e
 
         if not data.get("success"):
             err = data.get("error", {})
             msg = err.get("message", "Unknown Fluxbase error")
             code = err.get("code", "UNKNOWN")
-            logger.error(f"Fluxbase SQL error [{code}]: {msg}")
+            print(f"Fluxbase SQL error [{code}]: {msg}")
             raise RuntimeError(f"Fluxbase error [{code}]: {msg}")
 
         # Rows live at data["result"]["rows"] per the guide

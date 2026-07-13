@@ -242,6 +242,7 @@ class FluxbaseSession:
                 
                 set_str = ", ".join(set_clauses)
                 sql = f"UPDATE {table_name} SET {set_str} WHERE id = {obj_id};"
+                print(f"DEBUG COMMIT SQL: {sql}")
                 client.execute(sql)
                 
                 # Update snapshot to prevent duplicate updates
@@ -323,6 +324,7 @@ class FluxbaseSession:
                     logger.warning(f"Failed to parse update whereclause: {parse_err}")
                 
             sql = f"UPDATE {table_name} SET {set_str}{where_clause};"
+            print(f"DEBUG SQL: {sql}")
             from app.db.fluxbase import get_fluxbase_client
             client = get_fluxbase_client()
             client.execute(sql)
