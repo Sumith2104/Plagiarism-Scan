@@ -1,0 +1,820 @@
+2025-11-22 19:39:58,957 - DEBUG - Loaded CA certs
+2025-11-22 19:39:58,959 - INFO - Starting search for 20 chunks
+2025-11-22 19:39:58,959 - DEBUG - Searching for chunk 1: ications are web pages that function as applicatio...
+2025-11-22 19:39:58,960 - DEBUG - starting new connection: https://www.bing.com/
+2025-11-22 19:39:58,961 - DEBUG - resolving www.bing.com
+2025-11-22 19:39:58,986 - DEBUG - connecting to 23.11.215.147:443
+2025-11-22 19:39:58,998 - DEBUG - connected to 23.11.215.147:443
+2025-11-22 19:39:59,029 - DEBUG - pooling idle connection for PoolKey { uri: https://www.bing.com/, alpn_protos: None, network: default }
+2025-11-22 19:39:59,387 - DEBUG - inserting secure cookie 'MUID'
+2025-11-22 19:39:59,387 - DEBUG - inserting Set-Cookie 'Cookie { cookie_string: Some("MUIDB=2A49495523E260D6356D5FF922D06153; expires=Thu, 17-Dec-2026 14:09:59 GMT; path=/; HttpOnly"), name: Indexed(0, 5), value: Indexed(6, 38), expires: Some(DateTime(2026-12-17 14:09:59.0 +00:00:00)), max_age: None, domain: None, path: Some(Indexed(84, 85)), secure: None, http_only: Some(true), same_site: None, partitioned: None }'
+2025-11-22 19:39:59,387 - DEBUG - inserting Set-Cookie 'Cookie { cookie_string: Some("_EDGE_S=F=1&SID=2C25DB9E277667A421EFCD322644669B; domain=.bing.com; path=/; HttpOnly"), name: Indexed(0, 7), value: Indexed(8, 48), expires: None, max_age: None, domain: Some(Indexed(57, 66)), path: Some(Indexed(73, 74)), secure: None, http_only: Some(true), same_site: None, partitioned: None }'
+2025-11-22 19:39:59,388 - DEBUG - inserting Set-Cookie 'Cookie { cookie_string: Some("_EDGE_V=1; domain=.bing.com; expires=Thu, 17-Dec-2026 14:09:59 GMT; path=/; HttpOnly"), name: Indexed(0, 7), value: Indexed(8, 9), expires: Some(DateTime(2026-12-17 14:09:59.0 +00:00:00)), max_age: None, domain: Some(Indexed(18, 27)), path: Some(Indexed(73, 74)), secure: None, http_only: Some(true), same_site: None, partitioned: None }'
+2025-11-22 19:39:59,388 - DEBUG - inserting secure cookie 'SRCHD'
+2025-11-22 19:39:59,388 - DEBUG - inserting secure cookie 'SRCHUID'
+2025-11-22 19:39:59,388 - DEBUG - inserting secure cookie 'SRCHUSR'
+2025-11-22 19:39:59,388 - DEBUG - inserting secure cookie 'SRCHHPGUSR'
+2025-11-22 19:39:59,389 - DEBUG - inserting secure cookie '_SS'
+2025-11-22 19:39:59,389 - DEBUG - inserting Set-Cookie 'Cookie { cookie_string: Some("ak_bmsc=FEBE2A7FAA38F49BCEB6332A459D9C8B~000000000000000000000000000000~YAAQ1dcLF3ARqaiaAQAANHrmqx0DmdKZOGC9zuqAyl5/Ruu/QZkC3hjFLTK6znUMsePVCrxO2zjPSPtRLCO5u7pJgGyKVnV0H8BFfsrWypIn76116+M26c/CKLxAhQ3Nl1I8Ani+h5vVo//qXWHwmIb0dgH1+FbvxETAPdH8jRUwe0oqUVLifsDxyluvCh+i/7VBG+CuiZmQLsfct9fMFE1OiPjL4paUNg3D3uw6LoyEhqsYSYPYVmnOwy9Pik9SHw2Vbhufr+eZAjt5MlgyyfY+YuYAxoztoac45Art4oHS1M2Q6/PbMX3QY/Ijmr8FNAxDGN1SYa6aUmlIFMrC1aG7liL5m7orYgMLiz9ds6awwYTSO7s9SjQB5Gp54DNltuzcvCWCIlsF8A==; Domain=.bing.com; Path=/; Expires=Sat, 22 Nov 2025 16:09:59 GMT; Max-Age=7200; HttpOnly"), name: Indexed(0, 7), value: Indexed(8, 472), expires: Some(DateTime(2025-11-22 16:09:59.0 +00:00:00)), max_age: Some(Duration { seconds: 7200, nanoseconds: 0 }), domain: Some(Indexed(481, 490)), path: Some(Indexed(497, 498)), secure: None, http_only: Some(true), same_site: None, partitioned: None }'
+2025-11-22 19:39:59,389 - INFO - response: https://www.bing.com/search?q=ications+are+web+pages+that+function+as+application+software.+The+information+on+the+Web+is+transferred+across+the+Internet+using+HTTP.+Multiple+web+resources+with+a+common+theme+and+usually+a+common+ 200
+2025-11-22 19:39:59,389 - DEBUG - _get_url() https://www.bing.com/search?q=ications+are+web+pages+that+function+as+application+software.+The+information+on+the+Web+is+transferred+across+the+Internet+using+HTTP.+Multiple+web+resources+with+a+common+theme+and+usually+a+common+ 200
+2025-11-22 19:39:59,468 - DEBUG - Found 3 results for chunk 1
+2025-11-22 19:39:59,469 - DEBUG - Checking URL: https://support.microsoft.com/en-us/windows/how-to-get-help-in-windows-711b6492-0435-0038-8706-7c6b0feb200a
+2025-11-22 19:39:59,473 - DEBUG - Starting new HTTPS connection (1): support.microsoft.com:443
+2025-11-22 19:39:59,693 - DEBUG - https://support.microsoft.com:443 "GET /en-us/windows/how-to-get-help-in-windows-711b6492-0435-0038-8706-7c6b0feb200a HTTP/1.1" 200 None
+2025-11-22 19:39:59,814 - DEBUG - list link text/total: 17/17 – short elems/total: 0/1
+2025-11-22 19:39:59,815 - DEBUG - ['blockquote', 'code', 'del', 'head', 'hi', 'lb', 'list', 'p', 'pre', 'quote', 'table', 'td', 'th', 'tr']
+2025-11-22 19:39:59,815 - DEBUG - discarding element: section None
+2025-11-22 19:39:59,816 - DEBUG - (.//article)[1]
+2025-11-22 19:39:59,844 - DEBUG - Top 5: article 28.550869565217393
+2025-11-22 19:39:59,844 - DEBUG - Top 5: div 9.7
+2025-11-22 19:39:59,845 - DEBUG - Top 5: div 9.63
+2025-11-22 19:39:59,845 - DEBUG - Top 5: div 7.29
+2025-11-22 19:39:59,845 - DEBUG - Top 5: div 7.27
+2025-11-22 19:39:59,848 - DEBUG - extracted length: 529 (algorithm) 556 (extraction)
+2025-11-22 19:39:59,849 - DEBUG - extraction values: 556 529 for None
+2025-11-22 19:39:59,849 - DEBUG - using custom extraction: None
+2025-11-22 19:39:59,850 - DEBUG - not enough comments: None
+2025-11-22 19:39:59,852 - DEBUG - Extracted 517 chars from https://support.microsoft.com/en-us/windows/how-to-get-help-in-windows-711b6492-0435-0038-8706-7c6b0feb200a
+2025-11-22 19:39:59,856 - DEBUG - Similarity for https://support.microsoft.com/en-us/windows/how-to-get-help-in-windows-711b6492-0435-0038-8706-7c6b0feb200a: 0.023622047244094488
+2025-11-22 19:39:59,856 - DEBUG - Checking URL: https://appuals.com/how-to-get-help-in-windows/
+2025-11-22 19:39:59,858 - DEBUG - Starting new HTTPS connection (1): appuals.com:443
+2025-11-22 19:40:01,377 - DEBUG - https://appuals.com:443 "GET /how-to-get-help-in-windows/ HTTP/1.1" 200 None
+2025-11-22 19:40:01,420 - DEBUG - list link text/total: 29/29 – short elems/total: 0/1
+2025-11-22 19:40:01,420 - DEBUG - list link text/total: 134/134 – short elems/total: 0/3
+2025-11-22 19:40:01,427 - DEBUG - ['blockquote', 'code', 'del', 'head', 'hi', 'lb', 'list', 'p', 'pre', 'quote', 'table', 'td', 'th', 'tr']
+2025-11-22 19:40:01,428 - DEBUG - discarding element: header None
+2025-11-22 19:40:01,428 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,428 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,428 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,431 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,431 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,431 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,432 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,433 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,433 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,434 - DEBUG - discarding element: div How can I stop the F1 key from opening “Get Help” in the browser?
+2025-11-22 19:40:01,434 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,434 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,434 - DEBUG - discarding element: div How can I tell if my problem is related to Windows?
+2025-11-22 19:40:01,434 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,434 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,434 - DEBUG - discarding element: div Is it safe to let someone I don’t know access my PC with Quick Assist?
+2025-11-22 19:40:01,434 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,435 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,435 - DEBUG - discarding element: div None
+2025-11-22 19:40:01,435 - DEBUG - .//*[self::article or self::div or self::main or self::section][ @class="post" or @class="entry" or contains(@class, "post-text") or contains(@class, "post_text") or contains(@class, "post-body") or contains(@class, "post-entry") or contains(@class, "postentry") or contains(@class, "post-content") or contains(@class, "post_content") or contains(@class, "postcontent") or contains(@class, "postContent") or contains(@class, "post_inner_wrapper") or contains(@class, "article-text") or contains(@class, "articletext") or contains(@class, "articleText") or contains(@id, "entry-content") or contains(@class, "entry-content") or contains(@id, "article-content") or contains(@class, "article-content") or contains(@id, "article__content") or contains(@class, "article__content") or contains(@id, "article-body") or contains(@class, "article-body") or contains(@id, "article__body") or contains(@class, "article__body") or @itemprop="articleBody" or contains(translate(@id, "B", "b"), "articlebody") or contains(translate(@class, "B", "b"), "articlebody") or @id="articleContent" or contains(@class, "ArticleContent") or contains(@class, "page-content") or contains(@class, "text-content") or contains(@id, "body-text") or contains(@class, "body-text") or contains(@class, "article__container") or contains(@id, "art-content") or contains(@class, "art-content")][1]
+2025-11-22 19:40:01,472 - DEBUG - Top 5: div 187.99230378829077
+2025-11-22 19:40:01,473 - DEBUG - Top 5: article 129.24462052161357
+2025-11-22 19:40:01,473 - DEBUG - Top 5: div 37.41
+2025-11-22 19:40:01,473 - DEBUG - Top 5: div 36.56
+2025-11-22 19:40:01,473 - DEBUG - Top 5: div 36.214999999999996
+2025-11-22 19:40:01,480 - DEBUG - Removed 187.992 div with weight 0 cause it has too short content length 11 without a single image.
+2025-11-22 19:40:01,480 - DEBUG - Removed 187.992 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:01,482 - DEBUG - Removed div with score  0.000 and weight -25
+2025-11-22 19:40:01,483 - DEBUG - Removed 187.992 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:01,484 - DEBUG - Removed div with score  0.000 and weight -25
+2025-11-22 19:40:01,485 - DEBUG - Removed 187.992 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:01,488 - DEBUG - Removed 187.992 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:01,490 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 1.000 for its weight 0.
+2025-11-22 19:40:01,490 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 1.000 for its weight 0.
+2025-11-22 19:40:01,492 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 1.000 for its weight 0.
+2025-11-22 19:40:01,494 - DEBUG - Removed  0.000 div with weight 25 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:01,495 - DEBUG - Removed  0.000 div with weight 25 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:01,495 - DEBUG - Removed 187.992 div with weight 0 cause it has too short content length 17 without a single image.
+2025-11-22 19:40:01,496 - DEBUG - Removed div with score  0.000 and weight -25
+2025-11-22 19:40:01,501 - DEBUG - extracted length: 10321 (algorithm) 10151 (extraction)
+2025-11-22 19:40:01,502 - DEBUG - extraction values: 10151 10321 for None
+2025-11-22 19:40:01,502 - DEBUG - using custom extraction: None
+2025-11-22 19:40:01,503 - DEBUG - not enough comments: None
+2025-11-22 19:40:01,515 - DEBUG - Extracted 10199 chars from https://appuals.com/how-to-get-help-in-windows/
+2025-11-22 19:40:01,544 - DEBUG - Similarity for https://appuals.com/how-to-get-help-in-windows/: 0.011030099083940923
+2025-11-22 19:40:01,545 - DEBUG - Checking URL: https://helpdeskgeek.com/how-to-get-help-in-windows/
+2025-11-22 19:40:01,548 - DEBUG - Starting new HTTPS connection (1): helpdeskgeek.com:443
+2025-11-22 19:40:02,013 - DEBUG - https://helpdeskgeek.com:443 "GET /how-to-get-help-in-windows/ HTTP/1.1" 200 None
+2025-11-22 19:40:02,113 - DEBUG - ['blockquote', 'code', 'del', 'head', 'hi', 'lb', 'list', 'p', 'pre', 'quote', 'table', 'td', 'th', 'tr']
+2025-11-22 19:40:02,114 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,114 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,114 - DEBUG - discarding element: div Table of Contents
+2025-11-22 19:40:02,114 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,114 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,115 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,116 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,116 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,116 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,117 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,117 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,117 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,117 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,118 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,118 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,118 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,118 - DEBUG - discarding element: div None
+2025-11-22 19:40:02,118 - DEBUG - .//*[self::article or self::div or self::main or self::section][ @class="post" or @class="entry" or contains(@class, "post-text") or contains(@class, "post_text") or contains(@class, "post-body") or contains(@class, "post-entry") or contains(@class, "postentry") or contains(@class, "post-content") or contains(@class, "post_content") or contains(@class, "postcontent") or contains(@class, "postContent") or contains(@class, "post_inner_wrapper") or contains(@class, "article-text") or contains(@class, "articletext") or contains(@class, "articleText") or contains(@id, "entry-content") or contains(@class, "entry-content") or contains(@id, "article-content") or contains(@class, "article-content") or contains(@id, "article__content") or contains(@class, "article__content") or contains(@id, "article-body") or contains(@class, "article-body") or contains(@id, "article__body") or contains(@class, "article__body") or @itemprop="articleBody" or contains(translate(@id, "B", "b"), "articlebody") or contains(translate(@class, "B", "b"), "articlebody") or @id="articleContent" or contains(@class, "ArticleContent") or contains(@class, "page-content") or contains(@class, "text-content") or contains(@id, "body-text") or contains(@class, "body-text") or contains(@class, "article__container") or contains(@id, "art-content") or contains(@class, "art-content")][1]
+2025-11-22 19:40:02,135 - DEBUG - Top 5: div 129.68375685871055
+2025-11-22 19:40:02,136 - DEBUG - Top 5: div 78.62531464334702
+2025-11-22 19:40:02,136 - DEBUG - Top 5: div 12.32808988764045
+2025-11-22 19:40:02,136 - DEBUG - Top 5: div 10.81
+2025-11-22 19:40:02,136 - DEBUG - Top 5: div 8.534831460674157
+2025-11-22 19:40:02,137 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 14 without a single image.
+2025-11-22 19:40:02,138 - DEBUG - Removed  0.000 div with weight 0 cause it has no content.
+2025-11-22 19:40:02,138 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.988 for its weight 0.
+2025-11-22 19:40:02,139 - DEBUG - Removed 129.684 div with weight 0 cause it has too short content length 13 without a single image.
+2025-11-22 19:40:02,139 - DEBUG - Removed 129.684 div with weight 0 cause it has no content.
+2025-11-22 19:40:02,139 - DEBUG - Removed 129.684 div with weight 0 cause it has no content.
+2025-11-22 19:40:02,140 - DEBUG - Removed 129.684 div with weight 0 cause it has no content.
+2025-11-22 19:40:02,140 - DEBUG - Removed 129.684 div with weight 0 cause it has no content.
+2025-11-22 19:40:02,141 - DEBUG - Removed 129.684 div with weight 0 cause it has no content.
+2025-11-22 19:40:02,141 - DEBUG - Removed 129.684 div with weight 0 cause it has no content.
+2025-11-22 19:40:02,141 - DEBUG - Removed 129.684 div with weight 0 cause it has no content.
+2025-11-22 19:40:02,142 - DEBUG - Removed 129.684 div with weight 0 cause it has no content.
+2025-11-22 19:40:02,142 - DEBUG - Removed 129.684 div with weight 0 cause it has no content.
+2025-11-22 19:40:02,142 - DEBUG - Removed  0.000 ul with weight 25 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:02,143 - DEBUG - Removed 129.684 div with weight 25 cause it has too short content length 17 without a single image.
+2025-11-22 19:40:02,144 - DEBUG - extracted length: 5445 (algorithm) 5800 (extraction)
+2025-11-22 19:40:02,148 - DEBUG - extraction values: 5800 5445 for None
+2025-11-22 19:40:02,148 - DEBUG - using custom extraction: None
+2025-11-22 19:40:02,148 - DEBUG - not enough comments: None
+2025-11-22 19:40:02,152 - DEBUG - Extracted 5810 chars from https://helpdeskgeek.com/how-to-get-help-in-windows/
+2025-11-22 19:40:02,172 - DEBUG - Similarity for https://helpdeskgeek.com/how-to-get-help-in-windows/: 0.01585037248375337
+2025-11-22 19:40:05,014 - DEBUG - Searching for chunk 2: ntax, and implicitly made HTML the primary documen...
+2025-11-22 19:40:05,764 - DEBUG - reuse idle connection for PoolKey { uri: https://www.bing.com/, alpn_protos: None, network: default }
+2025-11-22 19:40:05,931 - DEBUG - inserting Set-Cookie 'Cookie { cookie_string: Some("MUIDB=2A49495523E260D6356D5FF922D06153; expires=Thu, 17-Dec-2026 14:10:06 GMT; path=/; HttpOnly"), name: Indexed(0, 5), value: Indexed(6, 38), expires: Some(DateTime(2026-12-17 14:10:06.0 +00:00:00)), max_age: None, domain: None, path: Some(Indexed(84, 85)), secure: None, http_only: Some(true), same_site: None, partitioned: None }'
+2025-11-22 19:40:05,931 - DEBUG - inserting secure cookie 'SRCHUSR'
+2025-11-22 19:40:05,931 - DEBUG - inserting secure cookie 'SRCHHPGUSR'
+2025-11-22 19:40:05,931 - DEBUG - inserting secure cookie 'bm_sv'
+2025-11-22 19:40:05,931 - INFO - response: https://www.bing.com/search?q=ntax%2C+and+implicitly+made+HTML+the+primary+document+format.%5B16%5D+The+technology+was+released+outside+CERN+to+other+research+institutions+starting+in+January+1991%2C+and+then+to+the+whole+Internet+on+23+A 200
+2025-11-22 19:40:05,931 - DEBUG - _get_url() https://www.bing.com/search?q=ntax%2C+and+implicitly+made+HTML+the+primary+document+format.%5B16%5D+The+technology+was+released+outside+CERN+to+other+research+institutions+starting+in+January+1991%2C+and+then+to+the+whole+Internet+on+23+A 200
+2025-11-22 19:40:06,495 - DEBUG - Found 3 results for chunk 2
+2025-11-22 19:40:06,495 - DEBUG - Checking URL: https://www.tutorialspoint.com/html/html_history_and_evolution.htm
+2025-11-22 19:40:06,496 - DEBUG - Starting new HTTPS connection (1): www.tutorialspoint.com:443
+2025-11-22 19:40:06,636 - DEBUG - https://www.tutorialspoint.com:443 "GET /html/html_history_and_evolution.htm HTTP/1.1" 200 13044
+2025-11-22 19:40:06,676 - DEBUG - list link text/total: 211/237 – short elems/total: 0/10
+2025-11-22 19:40:06,677 - DEBUG - table link text: 76 / total: 927
+2025-11-22 19:40:06,677 - DEBUG - ['blockquote', 'code', 'del', 'head', 'hi', 'lb', 'list', 'p', 'pre', 'quote', 'table', 'td', 'th', 'tr']
+2025-11-22 19:40:06,678 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,678 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,678 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,678 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,678 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,679 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,679 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,679 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,679 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,679 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,680 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,680 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,680 - DEBUG - discarding element: div Advertisements
+2025-11-22 19:40:06,680 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,680 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,680 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,680 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,680 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,680 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,680 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,680 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,680 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,680 - DEBUG - discarding element: div None
+2025-11-22 19:40:06,680 - DEBUG - (.//*[self::article or self::div or self::section][starts-with(@class, "main") or starts-with(@id, "main") or starts-with(@role, "main")])[1]|(.//main)[1]
+2025-11-22 19:40:06,686 - DEBUG - Top 5: div 85.51988013261924
+2025-11-22 19:40:06,687 - DEBUG - Top 5: div 35.7
+2025-11-22 19:40:06,687 - DEBUG - Top 5: table 22.43
+2025-11-22 19:40:06,687 - DEBUG - Top 5: div 14.061851265822783
+2025-11-22 19:40:06,687 - DEBUG - Top 5: table 13.97677993527508
+2025-11-22 19:40:06,687 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:06,687 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 14 without a single image.
+2025-11-22 19:40:06,687 - DEBUG - Removed 85.520 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:06,687 - DEBUG - Removed div with score  0.000 and weight -25
+2025-11-22 19:40:06,687 - DEBUG - Removed div with score  0.000 and weight -25
+2025-11-22 19:40:06,687 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:06,687 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 10 without a single image.
+2025-11-22 19:40:06,688 - DEBUG - Removed 85.520 div with weight 25 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:06,688 - DEBUG - Removed div with score  0.000 and weight -25
+2025-11-22 19:40:06,688 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 4 without a single image.
+2025-11-22 19:40:06,689 - DEBUG - Removed div with score  0.000 and weight -25
+2025-11-22 19:40:06,689 - DEBUG - Removed 85.520 div with weight 25 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:06,689 - DEBUG - Removed 85.520 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:06,689 - DEBUG - extracted length: 3862 (algorithm) 6023 (extraction)
+2025-11-22 19:40:06,689 - DEBUG - extraction values: 6023 3862 for None
+2025-11-22 19:40:06,690 - DEBUG - using custom extraction: None
+2025-11-22 19:40:06,690 - DEBUG - not enough comments: None
+2025-11-22 19:40:06,692 - DEBUG - Extracted 6517 chars from https://www.tutorialspoint.com/html/html_history_and_evolution.htm
+2025-11-22 19:40:06,696 - DEBUG - Similarity for https://www.tutorialspoint.com/html/html_history_and_evolution.htm: 0.021094640820980615
+2025-11-22 19:40:06,696 - DEBUG - Checking URL: https://www.sciencedirect.com/science/article/pii/S0160791X2100004X
+2025-11-22 19:40:06,697 - DEBUG - Starting new HTTPS connection (1): www.sciencedirect.com:443
+2025-11-22 19:40:07,884 - DEBUG - https://www.sciencedirect.com:443 "GET /science/article/pii/S0160791X2100004X HTTP/1.1" 302 143
+2025-11-22 19:40:08,144 - DEBUG - https://www.sciencedirect.com:443 "GET /unsupported_browser HTTP/1.1" 400 None
+2025-11-22 19:40:08,269 - WARNING - Failed to fetch https://www.sciencedirect.com/science/article/pii/S0160791X2100004X: Status 400
+2025-11-22 19:40:08,269 - DEBUG - Checking URL: https://mrcet.com/downloads/digital_notes/it/(r18a0517)webtechnologies.pdf
+2025-11-22 19:40:08,270 - DEBUG - Starting new HTTPS connection (1): mrcet.com:443
+2025-11-22 19:40:08,725 - DEBUG - https://mrcet.com:443 "GET /downloads/digital_notes/it/(r18a0517)webtechnologies.pdf HTTP/1.1" 200 5173678
+2025-11-22 19:40:16,255 - DEBUG - SHIFT_JIS Japanese prober hit error at byte 928
+2025-11-22 19:40:16,257 - DEBUG - EUC-JP Japanese prober hit error at byte 925
+2025-11-22 19:40:16,258 - DEBUG - GB2312 Chinese prober hit error at byte 928
+2025-11-22 19:40:16,260 - DEBUG - EUC-KR Korean prober hit error at byte 925
+2025-11-22 19:40:16,261 - DEBUG - CP949 Korean prober hit error at byte 928
+2025-11-22 19:40:16,262 - DEBUG - Big5 Chinese prober hit error at byte 925
+2025-11-22 19:40:16,264 - DEBUG - EUC-TW Taiwan prober hit error at byte 925
+2025-11-22 19:40:17,614 - DEBUG - windows-1251 confidence = 0.045720366934802865, below negative shortcut threshhold 0.05
+2025-11-22 19:40:18,921 - DEBUG - KOI8-R confidence = 0.040346257139599044, below negative shortcut threshhold 0.05
+2025-11-22 19:40:20,283 - DEBUG - ISO-8859-5 confidence = 0.042892213435432, below negative shortcut threshhold 0.05
+2025-11-22 19:40:21,562 - DEBUG - MacCyrillic confidence = 0.0464628198231643, below negative shortcut threshhold 0.05
+2025-11-22 19:40:22,792 - DEBUG - IBM866 confidence = 0.04336011987573182, below negative shortcut threshhold 0.05
+2025-11-22 19:40:24,097 - DEBUG - IBM855 confidence = 0.04213636782162701, below negative shortcut threshhold 0.05
+2025-11-22 19:40:29,251 - DEBUG - ISO-8859-5 confidence = 0.04194121447018572, below negative shortcut threshhold 0.05
+2025-11-22 19:40:30,925 - DEBUG - windows-1251 confidence = 0.04373640724566111, below negative shortcut threshhold 0.05
+2025-11-22 19:40:32,098 - DEBUG - TIS-620 confidence = 0.043282084806995094, below negative shortcut threshhold 0.05
+2025-11-22 19:40:35,127 - DEBUG - windows-1255 confidence = 0.04818664905312018, below negative shortcut threshhold 0.05
+2025-11-22 19:40:36,410 - DEBUG - windows-1255 confidence = 0.04834711293592985, below negative shortcut threshhold 0.05
+2025-11-22 19:40:38,033 - DEBUG - windows-1251 not active
+2025-11-22 19:40:38,033 - DEBUG - KOI8-R not active
+2025-11-22 19:40:38,033 - DEBUG - ISO-8859-5 not active
+2025-11-22 19:40:38,033 - DEBUG - MacCyrillic not active
+2025-11-22 19:40:38,033 - DEBUG - IBM866 not active
+2025-11-22 19:40:38,033 - DEBUG - IBM855 not active
+2025-11-22 19:40:38,033 - DEBUG - ISO-8859-7 Greek confidence = 0.07861227654063174
+2025-11-22 19:40:38,033 - DEBUG - windows-1253 Greek confidence = 0.08049366914185507
+2025-11-22 19:40:38,033 - DEBUG - ISO-8859-5 not active
+2025-11-22 19:40:38,033 - DEBUG - windows-1251 not active
+2025-11-22 19:40:38,033 - DEBUG - TIS-620 not active
+2025-11-22 19:40:38,033 - DEBUG - ISO-8859-9 Turkish confidence = 0.13190810903402198
+2025-11-22 19:40:38,034 - DEBUG - windows-1255 Hebrew confidence = 0.0
+2025-11-22 19:40:38,034 - DEBUG - windows-1255 not active
+2025-11-22 19:40:38,034 - DEBUG - windows-1255 not active
+2025-11-22 19:40:38,034 - DEBUG - no probers hit minimum threshold
+2025-11-22 19:40:38,034 - DEBUG - utf-8  confidence = 0.010000000000000009
+2025-11-22 19:40:38,034 - DEBUG - SHIFT_JIS Japanese confidence = 0.01
+2025-11-22 19:40:38,034 - DEBUG - EUC-JP Japanese confidence = 0.01
+2025-11-22 19:40:38,034 - DEBUG - GB2312 Chinese confidence = 0.01
+2025-11-22 19:40:38,034 - DEBUG - EUC-KR Korean confidence = 0.01
+2025-11-22 19:40:38,034 - DEBUG - CP949 Korean confidence = 0.01
+2025-11-22 19:40:38,034 - DEBUG - Big5 Chinese confidence = 0.01
+2025-11-22 19:40:38,034 - DEBUG - EUC-TW Taiwan confidence = 0.01
+2025-11-22 19:40:38,034 - DEBUG - windows-1251 Russian confidence = 0.045720366934802865
+2025-11-22 19:40:38,034 - DEBUG - KOI8-R Russian confidence = 0.040346257139599044
+2025-11-22 19:40:38,034 - DEBUG - ISO-8859-5 Russian confidence = 0.042892213435432
+2025-11-22 19:40:38,034 - DEBUG - MacCyrillic Russian confidence = 0.0464628198231643
+2025-11-22 19:40:38,034 - DEBUG - IBM866 Russian confidence = 0.04336011987573182
+2025-11-22 19:40:38,034 - DEBUG - IBM855 Russian confidence = 0.04213636782162701
+2025-11-22 19:40:38,034 - DEBUG - ISO-8859-7 Greek confidence = 0.07861227654063174
+2025-11-22 19:40:38,034 - DEBUG - windows-1253 Greek confidence = 0.08049366914185507
+2025-11-22 19:40:38,034 - DEBUG - ISO-8859-5 Bulgarian confidence = 0.04194121447018572
+2025-11-22 19:40:38,034 - DEBUG - windows-1251 Bulgarian confidence = 0.04373640724566111
+2025-11-22 19:40:38,034 - DEBUG - TIS-620 Thai confidence = 0.043282084806995094
+2025-11-22 19:40:38,034 - DEBUG - ISO-8859-9 Turkish confidence = 0.13190810903402198
+2025-11-22 19:40:38,034 - DEBUG - windows-1255 Hebrew confidence = 0.0
+2025-11-22 19:40:38,034 - DEBUG - windows-1255 Hebrew confidence = 0.04818664905312018
+2025-11-22 19:40:38,034 - DEBUG - windows-1255 Hebrew confidence = 0.04834711293592985
+2025-11-22 19:40:38,034 - DEBUG - ISO-8859-1  confidence = 0.01
+2025-11-22 19:40:38,135 - ERROR - parsed tree length: 1, wrong data type or not valid HTML
+2025-11-22 19:40:38,135 - ERROR - empty HTML tree: None
+2025-11-22 19:40:38,135 - WARNING - discarding data: None
+2025-11-22 19:40:38,136 - WARNING - No text extracted from https://mrcet.com/downloads/digital_notes/it/(r18a0517)webtechnologies.pdf
+2025-11-22 19:40:39,171 - DEBUG - Searching for chunk 3: system and in the Unix filesystem, as well as appr...
+2025-11-22 19:40:39,171 - DEBUG - reuse idle connection for PoolKey { uri: https://www.bing.com/, alpn_protos: None, network: default }
+2025-11-22 19:40:39,319 - DEBUG - inserting Set-Cookie 'Cookie { cookie_string: Some("MUIDB=2A49495523E260D6356D5FF922D06153; expires=Thu, 17-Dec-2026 14:10:39 GMT; path=/; HttpOnly"), name: Indexed(0, 5), value: Indexed(6, 38), expires: Some(DateTime(2026-12-17 14:10:39.0 +00:00:00)), max_age: None, domain: None, path: Some(Indexed(84, 85)), secure: None, http_only: Some(true), same_site: None, partitioned: None }'
+2025-11-22 19:40:39,319 - DEBUG - inserting secure cookie 'SRCHHPGUSR'
+2025-11-22 19:40:39,319 - DEBUG - inserting secure cookie 'bm_sv'
+2025-11-22 19:40:39,319 - INFO - response: https://www.bing.com/search?q=system+and+in+the+Unix+filesystem%2C+as+well+as+approaches+that+relied+on+tagging+files+with+keywords%2C+as+in+the+VAX%2FNOTES+system.+Instead%2C+he+adopted+concepts+he+had+put+into+practice+with+his+private+ 200
+2025-11-22 19:40:39,320 - DEBUG - _get_url() https://www.bing.com/search?q=system+and+in+the+Unix+filesystem%2C+as+well+as+approaches+that+relied+on+tagging+files+with+keywords%2C+as+in+the+VAX%2FNOTES+system.+Instead%2C+he+adopted+concepts+he+had+put+into+practice+with+his+private+ 200
+2025-11-22 19:40:39,932 - DEBUG - Found 3 results for chunk 3
+2025-11-22 19:40:39,932 - DEBUG - Checking URL: https://www.geeksforgeeks.org/operating-systems/unix-file-system/
+2025-11-22 19:40:39,934 - DEBUG - Starting new HTTPS connection (1): www.geeksforgeeks.org:443
+2025-11-22 19:40:40,061 - DEBUG - https://www.geeksforgeeks.org:443 "GET /operating-systems/unix-file-system/ HTTP/1.1" 200 None
+2025-11-22 19:40:40,114 - DEBUG - Recovering wild text elements
+2025-11-22 19:40:40,129 - DEBUG - Top 5: div 87.84101330704782
+2025-11-22 19:40:40,129 - DEBUG - Top 5: tbody 52.33500000000001
+2025-11-22 19:40:40,129 - DEBUG - Top 5: article 50.65623839765511
+2025-11-22 19:40:40,129 - DEBUG - Top 5: div 33.4
+2025-11-22 19:40:40,129 - DEBUG - Top 5: div 33.33
+2025-11-22 19:40:40,130 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,130 - DEBUG - Removed 87.841 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,130 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 4 without a single image.
+2025-11-22 19:40:40,130 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.933 for its weight 0.
+2025-11-22 19:40:40,130 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 14 without a single image.
+2025-11-22 19:40:40,130 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,131 - DEBUG - Removed  0.000 div with weight 25 cause it has too short content length 10 without a single image.
+2025-11-22 19:40:40,131 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,131 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,131 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 1 without a single image.
+2025-11-22 19:40:40,131 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,131 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,131 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,131 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,131 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,131 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,132 - DEBUG - Removed  0.000 div with weight 25 cause it has too short content length 10 without a single image.
+2025-11-22 19:40:40,132 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,132 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,132 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 1 without a single image.
+2025-11-22 19:40:40,132 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,132 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,132 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,132 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,132 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,132 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,133 - DEBUG - Removed  0.000 div with weight 25 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,133 - DEBUG - Removed 87.841 div with weight 25 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,133 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 11 without a single image.
+2025-11-22 19:40:40,133 - DEBUG - Removed  0.000 div with weight 25 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,133 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,133 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,133 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,133 - DEBUG - Removed 87.841 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:40,135 - DEBUG - extracted length: 10056 (algorithm) 0 (extraction)
+2025-11-22 19:40:40,136 - DEBUG - using generic algorithm: None
+2025-11-22 19:40:40,136 - DEBUG - unclean document triggering justext examination: None
+2025-11-22 19:40:40,368 - DEBUG - not enough comments: None
+2025-11-22 19:40:40,372 - DEBUG - Extracted 10262 chars from https://www.geeksforgeeks.org/operating-systems/unix-file-system/
+2025-11-22 19:40:40,376 - DEBUG - Similarity for https://www.geeksforgeeks.org/operating-systems/unix-file-system/: 0.012268798215447532
+2025-11-22 19:40:40,376 - DEBUG - Checking URL: https://en.wikipedia.org/wiki/Unix_filesystem
+2025-11-22 19:40:40,377 - DEBUG - Starting new HTTPS connection (1): en.wikipedia.org:443
+2025-11-22 19:40:41,312 - DEBUG - https://en.wikipedia.org:443 "GET /wiki/Unix_filesystem HTTP/1.1" 200 None
+2025-11-22 19:40:41,863 - DEBUG - list link text/total: 4/16 – short elems/total: 1/1
+2025-11-22 19:40:41,863 - DEBUG - list link text/total: 4/16 – short elems/total: 1/1
+2025-11-22 19:40:41,863 - DEBUG - list link text/total: 4/35 – short elems/total: 1/1
+2025-11-22 19:40:41,864 - DEBUG - list link text/total: 4/14 – short elems/total: 1/1
+2025-11-22 19:40:41,864 - DEBUG - list link text/total: 4/16 – short elems/total: 1/1
+2025-11-22 19:40:41,864 - DEBUG - list link text/total: 59/61 – short elems/total: 0/3
+2025-11-22 19:40:41,864 - DEBUG - list link text/total: 59/61 – short elems/total: 0/3
+2025-11-22 19:40:41,866 - DEBUG - list link text/total: 5/5 – short elems/total: 1/1
+2025-11-22 19:40:41,866 - DEBUG - list link text/total: 4/4 – short elems/total: 1/1
+2025-11-22 19:40:41,870 - DEBUG - list link text/total: 4/16 – short elems/total: 1/1
+2025-11-22 19:40:41,870 - DEBUG - list link text/total: 4/16 – short elems/total: 1/1
+2025-11-22 19:40:41,870 - DEBUG - list link text/total: 4/35 – short elems/total: 1/1
+2025-11-22 19:40:41,870 - DEBUG - list link text/total: 4/14 – short elems/total: 1/1
+2025-11-22 19:40:41,870 - DEBUG - list link text/total: 4/16 – short elems/total: 1/1
+2025-11-22 19:40:41,873 - DEBUG - table link text: 513 / total: 6269
+2025-11-22 19:40:41,874 - DEBUG - ['blockquote', 'code', 'del', 'head', 'hi', 'lb', 'list', 'p', 'pre', 'quote', 'table', 'td', 'th', 'tr']
+2025-11-22 19:40:41,875 - DEBUG - discarding element: header None
+2025-11-22 19:40:41,875 - DEBUG - discarding element: nav None
+2025-11-22 19:40:41,875 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,875 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,875 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,876 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,876 - DEBUG - discarding element: nav None
+2025-11-22 19:40:41,876 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,876 - DEBUG - discarding element: nav None
+2025-11-22 19:40:41,876 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,876 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,876 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,877 - DEBUG - discarding element: div Appearance
+2025-11-22 19:40:41,878 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,878 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,879 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,879 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,879 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,879 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,879 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,879 - DEBUG - extra in p: p The filesystem appears as one rooted tree of directories.[1] Instead of addressing separate volumes such as disk partitions, removable media, and network shares as separate trees, such volumes can be mounted on a directory, causing the volume's file system tree to appear as that directory in the larger tree.[1] The root of the entire tree is denoted
+2025-11-22 19:40:41,880 - DEBUG - extra in p: p In the original Bell Labs Unix, a two-disk setup was customary, where the first disk contained startup programs, while the second contained users' files and programs. This second disk was mounted at the empty directory named
+2025-11-22 19:40:41,880 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,880 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,880 - DEBUG - extra in p: p Certain conventions exist for locating some kinds of files, such as programs, system configuration files, and users' home directories. These were first documented in the
+2025-11-22 19:40:41,885 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,885 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,886 - DEBUG - discarding element: div None
+2025-11-22 19:40:41,887 - DEBUG - (.//*[self::article or self::div or self::main or self::section][ contains(@id, "content-main") or contains(@class, "content-main") or contains(@class, "content_main") or contains(@id, "content-body") or contains(@class, "content-body") or contains(@id, "contentBody") or contains(@class, "content__body") or contains(translate(@id, "CM","cm"), "main-content") or contains(translate(@class, "CM","cm"), "main-content") or contains(translate(@class, "CP","cp"), "page-content") or @id="content" or @class="content"])[1]
+2025-11-22 19:40:41,964 - DEBUG - Top 5: div 102.93597783287153
+2025-11-22 19:40:41,965 - DEBUG - Top 5: div 80.80241723785912
+2025-11-22 19:40:41,965 - DEBUG - Top 5: tbody 79.54842038216559
+2025-11-22 19:40:41,965 - DEBUG - Top 5: div 43.43195599197248
+2025-11-22 19:40:41,965 - DEBUG - Top 5: div 33.37
+2025-11-22 19:40:41,968 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.273 for its weight 0.
+2025-11-22 19:40:41,968 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:41,969 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.930 for its weight 0.
+2025-11-22 19:40:41,970 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:41,970 - DEBUG - Removed  0.000 ul with weight 0 cause it has too short content length 13 without a single image.
+2025-11-22 19:40:41,971 - DEBUG - Removed  0.000 ul with weight 0 cause it has too short content length 4 without a single image.
+2025-11-22 19:40:41,971 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.875 for its weight 0.
+2025-11-22 19:40:41,971 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:41,972 - DEBUG - Removed  0.000 ul with weight 0 cause it has too short content length 19 without a single image.
+2025-11-22 19:40:41,972 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.879 for its weight 0.
+2025-11-22 19:40:41,972 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:41,973 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.891 for its weight 0.
+2025-11-22 19:40:41,973 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:41,973 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.870 for its weight 0.
+2025-11-22 19:40:41,974 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.917 for its weight 0.
+2025-11-22 19:40:41,974 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.878 for its weight 0.
+2025-11-22 19:40:41,974 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:41,975 - DEBUG - Removed  0.000 table with weight 0 cause it has too short content length 21 without a single image.
+2025-11-22 19:40:41,975 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.912 for its weight 0.
+2025-11-22 19:40:41,975 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:41,976 - DEBUG - Removed  0.000 div with weight 0 cause it has too many links 0.820 for its weight 0.
+2025-11-22 19:40:41,976 - DEBUG - Removed  0.000 ul with weight 0 cause it has too short content length 3 without a single image.
+2025-11-22 19:40:41,977 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:41,977 - DEBUG - Removed  0.000 table with weight 0 cause it has too many links 1.000 for its weight 0.
+2025-11-22 19:40:41,978 - DEBUG - Removed 102.936 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 19:40:41,978 - DEBUG - Removed 102.936 ul with weight 0 cause it has too many links 0.462 for its weight 0.
+2025-11-22 19:40:41,979 - DEBUG - Removed 102.936 div with weight 0 cause it has too short content length 16 without a single image.
+2025-11-22 19:40:41,979 - DEBUG - Removed 102.936 ul with weight 0 cause it has too many links 0.922 for its weight 0.
+2025-11-22 19:40:41,979 - DEBUG - Removed 102.936 div with weight 0 cause it has too short content length 14 without a single image.
+2025-11-22 19:40:41,980 - DEBUG - Removed 102.936 div with weight 0 cause it has too many links 0.317 for its weight 0.
+2025-11-22 19:40:41,980 - DEBUG - Removed 102.936 div with weight 0 cause it has too many links 0.517 for its weight 0.
+2025-11-22 19:40:41,981 - DEBUG - Removed 102.936 div with weight 0 cause it has too short content length 16 without a single image.
+2025-11-22 19:40:41,981 - DEBUG - Removed 102.936 div with weight 0 cause it has too short content length 16 without a single image.
+2025-11-22 19:40:41,989 - DEBUG - extracted length: 12393 (algorithm) 12459 (extraction)
+2025-11-22 19:40:41,990 - DEBUG - extraction values: 12459 12393 for None
+2025-11-22 19:40:41,990 - DEBUG - using custom extraction: None
+2025-11-22 19:40:41,991 - DEBUG - not enough comments: None
+2025-11-22 19:40:42,001 - DEBUG - Extracted 12511 chars from https://en.wikipedia.org/wiki/Unix_filesystem
+2025-11-22 19:40:42,013 - DEBUG - Similarity for https://en.wikipedia.org/wiki/Unix_filesystem: 0.011992619926199263
+2025-11-22 19:40:42,014 - DEBUG - Checking URL: https://cseweb.ucsd.edu/classes/sp17/cse291-a/applications/ln/lecture5.html
+2025-11-22 19:40:42,016 - DEBUG - Starting new HTTPS connection (1): cseweb.ucsd.edu:443
+2025-11-22 19:40:48,066 - DEBUG - https://cseweb.ucsd.edu:443 "GET /classes/sp17/cse291-a/applications/ln/lecture5.html HTTP/1.1" 200 24710
+2025-11-22 19:40:48,332 - DEBUG - Recovering wild text elements
+2025-11-22 19:40:48,434 - DEBUG - Top 5: body 489.74
+2025-11-22 19:40:48,434 - DEBUG - Top 5: blockquote 68.21000000000001
+2025-11-22 19:40:48,435 - DEBUG - Top 5: blockquote 57.97
+2025-11-22 19:40:48,435 - DEBUG - Top 5: blockquote 55.690000000000005
+2025-11-22 19:40:48,435 - DEBUG - Top 5: blockquote 55.445
+2025-11-22 19:40:48,437 - DEBUG - Removed ul with score -0.330 and weight 0  
+2025-11-22 19:40:48,442 - DEBUG - extracted length: 62355 (algorithm) 63064 (extraction)
+2025-11-22 19:40:48,443 - DEBUG - extraction values: 63064 62355 for None
+2025-11-22 19:40:48,443 - DEBUG - using custom extraction: None
+2025-11-22 19:40:48,443 - DEBUG - not enough comments: None
+2025-11-22 19:40:48,456 - DEBUG - Extracted 63359 chars from https://cseweb.ucsd.edu/classes/sp17/cse291-a/applications/ln/lecture5.html
+2025-11-22 19:40:48,483 - DEBUG - Similarity for https://cseweb.ucsd.edu/classes/sp17/cse291-a/applications/ln/lecture5.html: 0.001566023552994237
+2025-11-22 19:40:50,389 - INFO - Search complete. Total matches: 0
+2025-11-22 22:46:59,631 - DEBUG - Loaded CA certs
+2025-11-22 22:46:59,639 - INFO - Starting search for 20 chunks
+2025-11-22 22:46:59,639 - DEBUG - Searching for chunk 1: ications are web pages that function as applicatio...
+2025-11-22 22:46:59,645 - DEBUG - starting new connection: https://www.bing.com/
+2025-11-22 22:46:59,646 - DEBUG - resolving www.bing.com
+2025-11-22 22:46:59,653 - DEBUG - connecting to 23.206.173.32:443
+2025-11-22 22:46:59,683 - DEBUG - connected to 23.206.173.32:443
+2025-11-22 22:46:59,735 - DEBUG - pooling idle connection for PoolKey { uri: https://www.bing.com/, alpn_protos: None, network: default }
+2025-11-22 22:46:59,998 - DEBUG - inserting secure cookie 'MUID'
+2025-11-22 22:46:59,998 - DEBUG - inserting Set-Cookie 'Cookie { cookie_string: Some("MUIDB=23E9CE98A29269FD1DD4D834A3A26886; expires=Thu, 17-Dec-2026 17:17:00 GMT; path=/; HttpOnly"), name: Indexed(0, 5), value: Indexed(6, 38), expires: Some(DateTime(2026-12-17 17:17:00.0 +00:00:00)), max_age: None, domain: None, path: Some(Indexed(84, 85)), secure: None, http_only: Some(true), same_site: None, partitioned: None }'
+2025-11-22 22:46:59,998 - DEBUG - inserting Set-Cookie 'Cookie { cookie_string: Some("_EDGE_S=F=1&SID=1958560AFBFE65D32C0240A6FACE6456; domain=.bing.com; path=/; HttpOnly"), name: Indexed(0, 7), value: Indexed(8, 48), expires: None, max_age: None, domain: Some(Indexed(57, 66)), path: Some(Indexed(73, 74)), secure: None, http_only: Some(true), same_site: None, partitioned: None }'
+2025-11-22 22:46:59,998 - DEBUG - inserting Set-Cookie 'Cookie { cookie_string: Some("_EDGE_V=1; domain=.bing.com; expires=Thu, 17-Dec-2026 17:17:00 GMT; path=/; HttpOnly"), name: Indexed(0, 7), value: Indexed(8, 9), expires: Some(DateTime(2026-12-17 17:17:00.0 +00:00:00)), max_age: None, domain: Some(Indexed(18, 27)), path: Some(Indexed(73, 74)), secure: None, http_only: Some(true), same_site: None, partitioned: None }'
+2025-11-22 22:46:59,999 - DEBUG - inserting secure cookie 'USRLOC'
+2025-11-22 22:46:59,999 - DEBUG - inserting secure cookie 'SRCHHPGUSR'
+2025-11-22 22:46:59,999 - DEBUG - inserting secure cookie 'SRCHD'
+2025-11-22 22:46:59,999 - DEBUG - inserting secure cookie 'SRCHUID'
+2025-11-22 22:46:59,999 - DEBUG - inserting secure cookie 'SRCHUSR'
+2025-11-22 22:46:59,999 - DEBUG - inserting secure cookie '_SS'
+2025-11-22 22:46:59,999 - DEBUG - inserting Set-Cookie 'Cookie { cookie_string: Some("ak_bmsc=3B8DDA424F8D1C0FD254C6CA229A05E1~000000000000000000000000000000~YAAQLK3OFxGh4KKaAQAAG7GRrB1/4vkATLyv1A/hylmEyQ379yoSXuWsKhT8chT6f+9osrewYfLZOmebg3nSIJ2bDKwH1qClPx1Gf8whcM57N4ZC0Hll02rxBsPoMgt6D4phLGqT4YNVOn9WI0HYqZJdbDvohIxyJ55kdPu8VHGOyhz8WYWv6vXQjT+EXeV+A85NCjCqBrxSVdwP2JSWPIcRiPeUdju+d2IIWJmwdXFbuTWcwuv+/VCiItn5xt+f1AL6XhhkWjQjBcMlgNR5PysdUYZH2nw14A0EB+3xuIee7cbJPXb0Ils7RW3CgKjq+a8ve6Sk3l+vrkEAaZDjz7OdiHuAl+4SwJBnUtVtrtMlupkmDJtpxKw7NgJONPhNAVpAbUDdqoBfiQ==; Domain=.bing.com; Path=/; Expires=Sat, 22 Nov 2025 19:17:00 GMT; Max-Age=7200; HttpOnly"), name: Indexed(0, 7), value: Indexed(8, 472), expires: Some(DateTime(2025-11-22 19:17:00.0 +00:00:00)), max_age: Some(Duration { seconds: 7200, nanoseconds: 0 }), domain: Some(Indexed(481, 490)), path: Some(Indexed(497, 498)), secure: None, http_only: Some(true), same_site: None, partitioned: None }'
+2025-11-22 22:46:59,999 - INFO - response: https://www.bing.com/search?q=ications+are+web+pages+that+function+as+application+software.+The+information+on+the+Web+is+transferred+across+the+Internet+using+HTTP.+Multiple+web+resources+with+a+common+theme+and+usually+a+common+ 200
+2025-11-22 22:46:59,999 - DEBUG - _get_url() https://www.bing.com/search?q=ications+are+web+pages+that+function+as+application+software.+The+information+on+the+Web+is+transferred+across+the+Internet+using+HTTP.+Multiple+web+resources+with+a+common+theme+and+usually+a+common+ 200
+2025-11-22 22:47:00,062 - DEBUG - Found 3 results for chunk 1
+2025-11-22 22:47:00,062 - DEBUG - Checking URL: https://stripchat.com/
+2025-11-22 22:47:00,063 - DEBUG - Starting new HTTPS connection (1): stripchat.com:443
+2025-11-22 22:47:00,148 - ERROR - Error processing URL https://stripchat.com/: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+2025-11-22 22:47:00,149 - DEBUG - Checking URL: https://stripchat.com/girls/recommended
+2025-11-22 22:47:00,151 - DEBUG - Starting new HTTPS connection (1): stripchat.com:443
+2025-11-22 22:47:00,223 - ERROR - Error processing URL https://stripchat.com/girls/recommended: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+2025-11-22 22:47:00,223 - DEBUG - Checking URL: https://stripchat.com/girls/popular
+2025-11-22 22:47:00,225 - DEBUG - Starting new HTTPS connection (1): stripchat.com:443
+2025-11-22 22:47:00,260 - ERROR - Error processing URL https://stripchat.com/girls/popular: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+2025-11-22 22:47:02,836 - DEBUG - Searching for chunk 2: ntax, and implicitly made HTML the primary documen...
+2025-11-22 22:47:03,587 - DEBUG - reuse idle connection for PoolKey { uri: https://www.bing.com/, alpn_protos: None, network: default }
+2025-11-22 22:47:03,782 - DEBUG - inserting Set-Cookie 'Cookie { cookie_string: Some("MUIDB=23E9CE98A29269FD1DD4D834A3A26886; expires=Thu, 17-Dec-2026 17:17:04 GMT; path=/; HttpOnly"), name: Indexed(0, 5), value: Indexed(6, 38), expires: Some(DateTime(2026-12-17 17:17:04.0 +00:00:00)), max_age: None, domain: None, path: Some(Indexed(84, 85)), secure: None, http_only: Some(true), same_site: None, partitioned: None }'
+2025-11-22 22:47:03,783 - DEBUG - inserting secure cookie 'SRCHHPGUSR'
+2025-11-22 22:47:03,783 - DEBUG - inserting secure cookie 'SRCHUSR'
+2025-11-22 22:47:03,783 - DEBUG - inserting secure cookie 'bm_sv'
+2025-11-22 22:47:03,784 - INFO - response: https://www.bing.com/search?q=ntax%2C+and+implicitly+made+HTML+the+primary+document+format.%5B16%5D+The+technology+was+released+outside+CERN+to+other+research+institutions+starting+in+January+1991%2C+and+then+to+the+whole+Internet+on+23+A 200
+2025-11-22 22:47:03,784 - DEBUG - _get_url() https://www.bing.com/search?q=ntax%2C+and+implicitly+made+HTML+the+primary+document+format.%5B16%5D+The+technology+was+released+outside+CERN+to+other+research+institutions+starting+in+January+1991%2C+and+then+to+the+whole+Internet+on+23+A 200
+2025-11-22 22:47:04,367 - DEBUG - Found 3 results for chunk 2
+2025-11-22 22:47:04,368 - DEBUG - Checking URL: https://www.sciencedirect.com/science/article/pii/S0160791X2100004X
+2025-11-22 22:47:04,371 - DEBUG - Starting new HTTPS connection (1): www.sciencedirect.com:443
+2025-11-22 22:47:04,592 - DEBUG - https://www.sciencedirect.com:443 "GET /science/article/pii/S0160791X2100004X HTTP/1.1" 302 143
+2025-11-22 22:47:04,823 - DEBUG - https://www.sciencedirect.com:443 "GET /unsupported_browser HTTP/1.1" 400 None
+2025-11-22 22:47:04,919 - WARNING - Failed to fetch https://www.sciencedirect.com/science/article/pii/S0160791X2100004X: Status 400
+2025-11-22 22:47:04,919 - DEBUG - Checking URL: https://www.tutorialspoint.com/html/html_history_and_evolution.htm
+2025-11-22 22:47:04,920 - DEBUG - Starting new HTTPS connection (1): www.tutorialspoint.com:443
+2025-11-22 22:47:05,054 - DEBUG - https://www.tutorialspoint.com:443 "GET /html/html_history_and_evolution.htm HTTP/1.1" 200 13044
+2025-11-22 22:47:05,094 - DEBUG - list link text/total: 211/237 – short elems/total: 0/10
+2025-11-22 22:47:05,095 - DEBUG - table link text: 76 / total: 927
+2025-11-22 22:47:05,095 - DEBUG - ['blockquote', 'code', 'del', 'head', 'hi', 'lb', 'list', 'p', 'pre', 'quote', 'table', 'td', 'th', 'tr']
+2025-11-22 22:47:05,096 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,096 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,096 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,096 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,096 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,096 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,096 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,096 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div Advertisements
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,097 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,098 - DEBUG - discarding element: div None
+2025-11-22 22:47:05,098 - DEBUG - (.//*[self::article or self::div or self::section][starts-with(@class, "main") or starts-with(@id, "main") or starts-with(@role, "main")])[1]|(.//main)[1]
+2025-11-22 22:47:05,105 - DEBUG - Top 5: div 85.51988013261924
+2025-11-22 22:47:05,105 - DEBUG - Top 5: div 35.7
+2025-11-22 22:47:05,105 - DEBUG - Top 5: table 22.43
+2025-11-22 22:47:05,105 - DEBUG - Top 5: div 14.061851265822783
+2025-11-22 22:47:05,105 - DEBUG - Top 5: table 13.97677993527508
+2025-11-22 22:47:05,105 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:05,106 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 14 without a single image.
+2025-11-22 22:47:05,106 - DEBUG - Removed 85.520 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:05,106 - DEBUG - Removed div with score  0.000 and weight -25
+2025-11-22 22:47:05,106 - DEBUG - Removed div with score  0.000 and weight -25
+2025-11-22 22:47:05,106 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:05,106 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 10 without a single image.
+2025-11-22 22:47:05,106 - DEBUG - Removed 85.520 div with weight 25 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:05,106 - DEBUG - Removed div with score  0.000 and weight -25
+2025-11-22 22:47:05,106 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 4 without a single image.
+2025-11-22 22:47:05,106 - DEBUG - Removed div with score  0.000 and weight -25
+2025-11-22 22:47:05,106 - DEBUG - Removed 85.520 div with weight 25 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:05,107 - DEBUG - Removed 85.520 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:05,107 - DEBUG - extracted length: 3862 (algorithm) 6023 (extraction)
+2025-11-22 22:47:05,107 - DEBUG - extraction values: 6023 3862 for None
+2025-11-22 22:47:05,107 - DEBUG - using custom extraction: None
+2025-11-22 22:47:05,107 - DEBUG - not enough comments: None
+2025-11-22 22:47:05,110 - DEBUG - Extracted 6517 chars from https://www.tutorialspoint.com/html/html_history_and_evolution.htm
+2025-11-22 22:47:05,110 - DEBUG - Extracted 6517 chars from https://www.tutorialspoint.com/html/html_history_and_evolution.htm
+2025-11-22 22:47:05,111 - DEBUG - Similarity for https://www.tutorialspoint.com/html/html_history_and_evolution.htm: 0.014028056112224449
+2025-11-22 22:47:05,111 - DEBUG - Checking URL: https://mrcet.com/downloads/digital_notes/it/(r18a0517)webtechnologies.pdf
+2025-11-22 22:47:05,111 - DEBUG - Starting new HTTPS connection (1): mrcet.com:443
+2025-11-22 22:47:05,420 - DEBUG - https://mrcet.com:443 "GET /downloads/digital_notes/it/(r18a0517)webtechnologies.pdf HTTP/1.1" 200 5173678
+2025-11-22 22:47:11,089 - DEBUG - SHIFT_JIS Japanese prober hit error at byte 928
+2025-11-22 22:47:11,090 - DEBUG - EUC-JP Japanese prober hit error at byte 925
+2025-11-22 22:47:11,090 - DEBUG - GB2312 Chinese prober hit error at byte 928
+2025-11-22 22:47:11,091 - DEBUG - EUC-KR Korean prober hit error at byte 925
+2025-11-22 22:47:11,092 - DEBUG - CP949 Korean prober hit error at byte 928
+2025-11-22 22:47:11,092 - DEBUG - Big5 Chinese prober hit error at byte 925
+2025-11-22 22:47:11,093 - DEBUG - EUC-TW Taiwan prober hit error at byte 925
+2025-11-22 22:47:11,997 - DEBUG - windows-1251 confidence = 0.045720366934802865, below negative shortcut threshhold 0.05
+2025-11-22 22:47:13,208 - DEBUG - KOI8-R confidence = 0.040346257139599044, below negative shortcut threshhold 0.05
+2025-11-22 22:47:15,497 - DEBUG - ISO-8859-5 confidence = 0.042892213435432, below negative shortcut threshhold 0.05
+2025-11-22 22:47:17,740 - DEBUG - MacCyrillic confidence = 0.0464628198231643, below negative shortcut threshhold 0.05
+2025-11-22 22:47:20,053 - DEBUG - IBM866 confidence = 0.04336011987573182, below negative shortcut threshhold 0.05
+2025-11-22 22:47:22,294 - DEBUG - IBM855 confidence = 0.04213636782162701, below negative shortcut threshhold 0.05
+2025-11-22 22:47:29,241 - DEBUG - ISO-8859-5 confidence = 0.04194121447018572, below negative shortcut threshhold 0.05
+2025-11-22 22:47:31,581 - DEBUG - windows-1251 confidence = 0.04373640724566111, below negative shortcut threshhold 0.05
+2025-11-22 22:47:33,729 - DEBUG - TIS-620 confidence = 0.043282084806995094, below negative shortcut threshhold 0.05
+2025-11-22 22:47:39,459 - DEBUG - windows-1255 confidence = 0.04818664905312018, below negative shortcut threshhold 0.05
+2025-11-22 22:47:41,877 - DEBUG - windows-1255 confidence = 0.04834711293592985, below negative shortcut threshhold 0.05
+2025-11-22 22:47:45,164 - DEBUG - windows-1251 not active
+2025-11-22 22:47:45,164 - DEBUG - KOI8-R not active
+2025-11-22 22:47:45,164 - DEBUG - ISO-8859-5 not active
+2025-11-22 22:47:45,165 - DEBUG - MacCyrillic not active
+2025-11-22 22:47:45,165 - DEBUG - IBM866 not active
+2025-11-22 22:47:45,165 - DEBUG - IBM855 not active
+2025-11-22 22:47:45,165 - DEBUG - ISO-8859-7 Greek confidence = 0.07861227654063174
+2025-11-22 22:47:45,165 - DEBUG - windows-1253 Greek confidence = 0.08049366914185507
+2025-11-22 22:47:45,165 - DEBUG - ISO-8859-5 not active
+2025-11-22 22:47:45,165 - DEBUG - windows-1251 not active
+2025-11-22 22:47:45,165 - DEBUG - TIS-620 not active
+2025-11-22 22:47:45,165 - DEBUG - ISO-8859-9 Turkish confidence = 0.13190810903402198
+2025-11-22 22:47:45,166 - DEBUG - windows-1255 Hebrew confidence = 0.0
+2025-11-22 22:47:45,166 - DEBUG - windows-1255 not active
+2025-11-22 22:47:45,166 - DEBUG - windows-1255 not active
+2025-11-22 22:47:45,166 - DEBUG - no probers hit minimum threshold
+2025-11-22 22:47:45,166 - DEBUG - utf-8  confidence = 0.010000000000000009
+2025-11-22 22:47:45,166 - DEBUG - SHIFT_JIS Japanese confidence = 0.01
+2025-11-22 22:47:45,166 - DEBUG - EUC-JP Japanese confidence = 0.01
+2025-11-22 22:47:45,166 - DEBUG - GB2312 Chinese confidence = 0.01
+2025-11-22 22:47:45,167 - DEBUG - EUC-KR Korean confidence = 0.01
+2025-11-22 22:47:45,167 - DEBUG - CP949 Korean confidence = 0.01
+2025-11-22 22:47:45,167 - DEBUG - Big5 Chinese confidence = 0.01
+2025-11-22 22:47:45,167 - DEBUG - EUC-TW Taiwan confidence = 0.01
+2025-11-22 22:47:45,167 - DEBUG - windows-1251 Russian confidence = 0.045720366934802865
+2025-11-22 22:47:45,167 - DEBUG - KOI8-R Russian confidence = 0.040346257139599044
+2025-11-22 22:47:45,167 - DEBUG - ISO-8859-5 Russian confidence = 0.042892213435432
+2025-11-22 22:47:45,167 - DEBUG - MacCyrillic Russian confidence = 0.0464628198231643
+2025-11-22 22:47:45,167 - DEBUG - IBM866 Russian confidence = 0.04336011987573182
+2025-11-22 22:47:45,167 - DEBUG - IBM855 Russian confidence = 0.04213636782162701
+2025-11-22 22:47:45,167 - DEBUG - ISO-8859-7 Greek confidence = 0.07861227654063174
+2025-11-22 22:47:45,167 - DEBUG - windows-1253 Greek confidence = 0.08049366914185507
+2025-11-22 22:47:45,167 - DEBUG - ISO-8859-5 Bulgarian confidence = 0.04194121447018572
+2025-11-22 22:47:45,167 - DEBUG - windows-1251 Bulgarian confidence = 0.04373640724566111
+2025-11-22 22:47:45,167 - DEBUG - TIS-620 Thai confidence = 0.043282084806995094
+2025-11-22 22:47:45,167 - DEBUG - ISO-8859-9 Turkish confidence = 0.13190810903402198
+2025-11-22 22:47:45,168 - DEBUG - windows-1255 Hebrew confidence = 0.0
+2025-11-22 22:47:45,168 - DEBUG - windows-1255 Hebrew confidence = 0.04818664905312018
+2025-11-22 22:47:45,168 - DEBUG - windows-1255 Hebrew confidence = 0.04834711293592985
+2025-11-22 22:47:45,168 - DEBUG - ISO-8859-1  confidence = 0.01
+2025-11-22 22:47:45,336 - ERROR - parsed tree length: 1, wrong data type or not valid HTML
+2025-11-22 22:47:45,336 - ERROR - empty HTML tree: None
+2025-11-22 22:47:45,336 - WARNING - discarding data: None
+2025-11-22 22:47:45,338 - WARNING - No text extracted from https://mrcet.com/downloads/digital_notes/it/(r18a0517)webtechnologies.pdf
+2025-11-22 22:47:47,460 - DEBUG - Searching for chunk 3: system and in the Unix filesystem, as well as appr...
+2025-11-22 22:47:47,461 - DEBUG - reuse idle connection for PoolKey { uri: https://www.bing.com/, alpn_protos: None, network: default }
+2025-11-22 22:47:47,653 - DEBUG - inserting Set-Cookie 'Cookie { cookie_string: Some("MUIDB=23E9CE98A29269FD1DD4D834A3A26886; expires=Thu, 17-Dec-2026 17:17:48 GMT; path=/; HttpOnly"), name: Indexed(0, 5), value: Indexed(6, 38), expires: Some(DateTime(2026-12-17 17:17:48.0 +00:00:00)), max_age: None, domain: None, path: Some(Indexed(84, 85)), secure: None, http_only: Some(true), same_site: None, partitioned: None }'
+2025-11-22 22:47:47,654 - DEBUG - inserting secure cookie 'SRCHHPGUSR'
+2025-11-22 22:47:47,654 - DEBUG - inserting secure cookie 'bm_sv'
+2025-11-22 22:47:47,654 - INFO - response: https://www.bing.com/search?q=system+and+in+the+Unix+filesystem%2C+as+well+as+approaches+that+relied+on+tagging+files+with+keywords%2C+as+in+the+VAX%2FNOTES+system.+Instead%2C+he+adopted+concepts+he+had+put+into+practice+with+his+private+ 200
+2025-11-22 22:47:47,654 - DEBUG - _get_url() https://www.bing.com/search?q=system+and+in+the+Unix+filesystem%2C+as+well+as+approaches+that+relied+on+tagging+files+with+keywords%2C+as+in+the+VAX%2FNOTES+system.+Instead%2C+he+adopted+concepts+he+had+put+into+practice+with+his+private+ 200
+2025-11-22 22:47:48,190 - DEBUG - Found 3 results for chunk 3
+2025-11-22 22:47:48,191 - DEBUG - Checking URL: https://www.geeksforgeeks.org/operating-systems/unix-file-system/
+2025-11-22 22:47:48,192 - DEBUG - Starting new HTTPS connection (1): www.geeksforgeeks.org:443
+2025-11-22 22:47:48,332 - DEBUG - https://www.geeksforgeeks.org:443 "GET /operating-systems/unix-file-system/ HTTP/1.1" 200 None
+2025-11-22 22:47:48,385 - DEBUG - Recovering wild text elements
+2025-11-22 22:47:48,398 - DEBUG - Top 5: div 87.84101330704782
+2025-11-22 22:47:48,399 - DEBUG - Top 5: tbody 52.33500000000001
+2025-11-22 22:47:48,399 - DEBUG - Top 5: article 50.65623839765511
+2025-11-22 22:47:48,399 - DEBUG - Top 5: div 33.4
+2025-11-22 22:47:48,399 - DEBUG - Top 5: div 33.33
+2025-11-22 22:47:48,399 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,399 - DEBUG - Removed 87.841 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 4 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.933 for its weight 0.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 14 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 25 cause it has too short content length 10 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 1 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 25 cause it has too short content length 10 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,400 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,401 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 1 without a single image.
+2025-11-22 22:47:48,401 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,401 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,401 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,401 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,401 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,401 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,401 - DEBUG - Removed  0.000 div with weight 25 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,401 - DEBUG - Removed 87.841 div with weight 25 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,401 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 11 without a single image.
+2025-11-22 22:47:48,401 - DEBUG - Removed  0.000 div with weight 25 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,402 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,402 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,402 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,402 - DEBUG - Removed 87.841 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:47:48,404 - DEBUG - extracted length: 10056 (algorithm) 0 (extraction)
+2025-11-22 22:47:48,404 - DEBUG - using generic algorithm: None
+2025-11-22 22:47:48,404 - DEBUG - unclean document triggering justext examination: None
+2025-11-22 22:47:48,837 - DEBUG - not enough comments: None
+2025-11-22 22:47:48,848 - DEBUG - Extracted 10262 chars from https://www.geeksforgeeks.org/operating-systems/unix-file-system/
+2025-11-22 22:47:48,848 - DEBUG - Extracted 10262 chars from https://www.geeksforgeeks.org/operating-systems/unix-file-system/
+2025-11-22 22:47:48,853 - DEBUG - Similarity for https://www.geeksforgeeks.org/operating-systems/unix-file-system/: 0.004024144869215292
+2025-11-22 22:47:48,853 - DEBUG - Checking URL: https://www.cs.princeton.edu/courses/archive/fall23/cos316/lectures/L04-unix-fs.pdf
+2025-11-22 22:47:48,855 - DEBUG - Starting new HTTPS connection (1): www.cs.princeton.edu:443
+2025-11-22 22:47:49,986 - DEBUG - https://www.cs.princeton.edu:443 "GET /courses/archive/fall23/cos316/lectures/L04-unix-fs.pdf HTTP/1.1" 200 1079213
+2025-11-22 22:47:52,260 - DEBUG - SHIFT_JIS Japanese prober hit error at byte 12
+2025-11-22 22:47:52,260 - DEBUG - EUC-JP Japanese prober hit error at byte 233
+2025-11-22 22:47:52,261 - DEBUG - GB2312 Chinese prober hit error at byte 242
+2025-11-22 22:47:52,261 - DEBUG - EUC-KR Korean prober hit error at byte 233
+2025-11-22 22:47:52,261 - DEBUG - CP949 Korean prober hit error at byte 251
+2025-11-22 22:47:52,261 - DEBUG - Big5 Chinese prober hit error at byte 233
+2025-11-22 22:47:52,261 - DEBUG - EUC-TW Taiwan prober hit error at byte 233
+2025-11-22 22:47:52,871 - DEBUG - windows-1251 confidence = 0.039946296085391506, below negative shortcut threshhold 0.05
+2025-11-22 22:47:53,461 - DEBUG - KOI8-R confidence = 0.04116888496628368, below negative shortcut threshhold 0.05
+2025-11-22 22:47:54,047 - DEBUG - ISO-8859-5 confidence = 0.041298557651132786, below negative shortcut threshhold 0.05
+2025-11-22 22:47:54,615 - DEBUG - MacCyrillic confidence = 0.039283454353430274, below negative shortcut threshhold 0.05
+2025-11-22 22:47:55,174 - DEBUG - IBM866 confidence = 0.04383820881599894, below negative shortcut threshhold 0.05
+2025-11-22 22:47:55,810 - DEBUG - IBM855 confidence = 0.04098286405894612, below negative shortcut threshhold 0.05
+2025-11-22 22:47:57,590 - DEBUG - ISO-8859-5 confidence = 0.04104958394116704, below negative shortcut threshhold 0.05
+2025-11-22 22:47:58,202 - DEBUG - windows-1251 confidence = 0.03873516963692308, below negative shortcut threshhold 0.05
+2025-11-22 22:47:58,848 - DEBUG - TIS-620 confidence = 0.04593342968849422, below negative shortcut threshhold 0.05
+2025-11-22 22:48:00,221 - DEBUG - windows-1255 confidence = 0.040255300972878855, below negative shortcut threshhold 0.05
+2025-11-22 22:48:00,849 - DEBUG - windows-1255 confidence = 0.03928119310677129, below negative shortcut threshhold 0.05
+2025-11-22 22:48:01,494 - DEBUG - windows-1251 not active
+2025-11-22 22:48:01,494 - DEBUG - KOI8-R not active
+2025-11-22 22:48:01,494 - DEBUG - ISO-8859-5 not active
+2025-11-22 22:48:01,495 - DEBUG - MacCyrillic not active
+2025-11-22 22:48:01,495 - DEBUG - IBM866 not active
+2025-11-22 22:48:01,495 - DEBUG - IBM855 not active
+2025-11-22 22:48:01,495 - DEBUG - ISO-8859-7 Greek confidence = 0.06720324894787148
+2025-11-22 22:48:01,495 - DEBUG - windows-1253 Greek confidence = 0.06836628643676212
+2025-11-22 22:48:01,495 - DEBUG - ISO-8859-5 not active
+2025-11-22 22:48:01,495 - DEBUG - windows-1251 not active
+2025-11-22 22:48:01,495 - DEBUG - TIS-620 not active
+2025-11-22 22:48:01,495 - DEBUG - ISO-8859-9 Turkish confidence = 0.051613107695412414
+2025-11-22 22:48:01,495 - DEBUG - windows-1255 Hebrew confidence = 0.0
+2025-11-22 22:48:01,495 - DEBUG - windows-1255 not active
+2025-11-22 22:48:01,495 - DEBUG - windows-1255 not active
+2025-11-22 22:48:01,495 - DEBUG - no probers hit minimum threshold
+2025-11-22 22:48:01,496 - DEBUG - utf-8  confidence = 0.010000000000000009
+2025-11-22 22:48:01,496 - DEBUG - SHIFT_JIS Japanese confidence = 0.01
+2025-11-22 22:48:01,496 - DEBUG - EUC-JP Japanese confidence = 0.01
+2025-11-22 22:48:01,496 - DEBUG - GB2312 Chinese confidence = 0.01
+2025-11-22 22:48:01,496 - DEBUG - EUC-KR Korean confidence = 0.01
+2025-11-22 22:48:01,496 - DEBUG - CP949 Korean confidence = 0.01
+2025-11-22 22:48:01,496 - DEBUG - Big5 Chinese confidence = 0.01
+2025-11-22 22:48:01,496 - DEBUG - EUC-TW Taiwan confidence = 0.01
+2025-11-22 22:48:01,496 - DEBUG - windows-1251 Russian confidence = 0.039946296085391506
+2025-11-22 22:48:01,496 - DEBUG - KOI8-R Russian confidence = 0.04116888496628368
+2025-11-22 22:48:01,496 - DEBUG - ISO-8859-5 Russian confidence = 0.041298557651132786
+2025-11-22 22:48:01,497 - DEBUG - MacCyrillic Russian confidence = 0.039283454353430274
+2025-11-22 22:48:01,497 - DEBUG - IBM866 Russian confidence = 0.04383820881599894
+2025-11-22 22:48:01,497 - DEBUG - IBM855 Russian confidence = 0.04098286405894612
+2025-11-22 22:48:01,497 - DEBUG - ISO-8859-7 Greek confidence = 0.06720324894787148
+2025-11-22 22:48:01,497 - DEBUG - windows-1253 Greek confidence = 0.06836628643676212
+2025-11-22 22:48:01,497 - DEBUG - ISO-8859-5 Bulgarian confidence = 0.04104958394116704
+2025-11-22 22:48:01,497 - DEBUG - windows-1251 Bulgarian confidence = 0.03873516963692308
+2025-11-22 22:48:01,497 - DEBUG - TIS-620 Thai confidence = 0.04593342968849422
+2025-11-22 22:48:01,497 - DEBUG - ISO-8859-9 Turkish confidence = 0.051613107695412414
+2025-11-22 22:48:01,497 - DEBUG - windows-1255 Hebrew confidence = 0.0
+2025-11-22 22:48:01,498 - DEBUG - windows-1255 Hebrew confidence = 0.040255300972878855
+2025-11-22 22:48:01,498 - DEBUG - windows-1255 Hebrew confidence = 0.03928119310677129
+2025-11-22 22:48:01,498 - DEBUG - ISO-8859-1  confidence = 0.01
+2025-11-22 22:48:01,534 - ERROR - parsed tree length: 1, wrong data type or not valid HTML
+2025-11-22 22:48:01,534 - ERROR - empty HTML tree: None
+2025-11-22 22:48:01,535 - WARNING - discarding data: None
+2025-11-22 22:48:01,535 - WARNING - No text extracted from https://www.cs.princeton.edu/courses/archive/fall23/cos316/lectures/L04-unix-fs.pdf
+2025-11-22 22:48:01,535 - DEBUG - Checking URL: https://en.wikipedia.org/wiki/Unix_filesystem
+2025-11-22 22:48:01,537 - DEBUG - Starting new HTTPS connection (1): en.wikipedia.org:443
+2025-11-22 22:48:01,717 - DEBUG - https://en.wikipedia.org:443 "GET /wiki/Unix_filesystem HTTP/1.1" 200 26365
+2025-11-22 22:48:01,926 - DEBUG - list link text/total: 4/16 – short elems/total: 1/1
+2025-11-22 22:48:01,926 - DEBUG - list link text/total: 4/16 – short elems/total: 1/1
+2025-11-22 22:48:01,927 - DEBUG - list link text/total: 4/35 – short elems/total: 1/1
+2025-11-22 22:48:01,927 - DEBUG - list link text/total: 4/14 – short elems/total: 1/1
+2025-11-22 22:48:01,928 - DEBUG - list link text/total: 4/16 – short elems/total: 1/1
+2025-11-22 22:48:01,928 - DEBUG - list link text/total: 59/61 – short elems/total: 0/3
+2025-11-22 22:48:01,928 - DEBUG - list link text/total: 59/61 – short elems/total: 0/3
+2025-11-22 22:48:01,930 - DEBUG - list link text/total: 5/5 – short elems/total: 1/1
+2025-11-22 22:48:01,930 - DEBUG - list link text/total: 4/4 – short elems/total: 1/1
+2025-11-22 22:48:01,934 - DEBUG - list link text/total: 4/16 – short elems/total: 1/1
+2025-11-22 22:48:01,934 - DEBUG - list link text/total: 4/16 – short elems/total: 1/1
+2025-11-22 22:48:01,934 - DEBUG - list link text/total: 4/35 – short elems/total: 1/1
+2025-11-22 22:48:01,934 - DEBUG - list link text/total: 4/14 – short elems/total: 1/1
+2025-11-22 22:48:01,935 - DEBUG - list link text/total: 4/16 – short elems/total: 1/1
+2025-11-22 22:48:01,937 - DEBUG - table link text: 513 / total: 6269
+2025-11-22 22:48:01,938 - DEBUG - ['blockquote', 'code', 'del', 'head', 'hi', 'lb', 'list', 'p', 'pre', 'quote', 'table', 'td', 'th', 'tr']
+2025-11-22 22:48:01,939 - DEBUG - discarding element: header None
+2025-11-22 22:48:01,939 - DEBUG - discarding element: nav None
+2025-11-22 22:48:01,939 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,939 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,939 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,939 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,939 - DEBUG - discarding element: nav None
+2025-11-22 22:48:01,939 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,939 - DEBUG - discarding element: nav None
+2025-11-22 22:48:01,939 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,940 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,940 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,940 - DEBUG - discarding element: div Appearance
+2025-11-22 22:48:01,940 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,940 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,940 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,940 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,940 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,941 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,941 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,941 - DEBUG - extra in p: p The filesystem appears as one rooted tree of directories.[1] Instead of addressing separate volumes such as disk partitions, removable media, and network shares as separate trees, such volumes can be mounted on a directory, causing the volume's file system tree to appear as that directory in the larger tree.[1] The root of the entire tree is denoted
+2025-11-22 22:48:01,941 - DEBUG - extra in p: p In the original Bell Labs Unix, a two-disk setup was customary, where the first disk contained startup programs, while the second contained users' files and programs. This second disk was mounted at the empty directory named
+2025-11-22 22:48:01,942 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,942 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,942 - DEBUG - extra in p: p Certain conventions exist for locating some kinds of files, such as programs, system configuration files, and users' home directories. These were first documented in the
+2025-11-22 22:48:01,946 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,947 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,948 - DEBUG - discarding element: div None
+2025-11-22 22:48:01,949 - DEBUG - (.//*[self::article or self::div or self::main or self::section][ contains(@id, "content-main") or contains(@class, "content-main") or contains(@class, "content_main") or contains(@id, "content-body") or contains(@class, "content-body") or contains(@id, "contentBody") or contains(@class, "content__body") or contains(translate(@id, "CM","cm"), "main-content") or contains(translate(@class, "CM","cm"), "main-content") or contains(translate(@class, "CP","cp"), "page-content") or @id="content" or @class="content"])[1]
+2025-11-22 22:48:02,000 - DEBUG - Top 5: div 102.93597783287153
+2025-11-22 22:48:02,001 - DEBUG - Top 5: div 80.80241723785912
+2025-11-22 22:48:02,001 - DEBUG - Top 5: tbody 79.54842038216559
+2025-11-22 22:48:02,001 - DEBUG - Top 5: div 43.43195599197248
+2025-11-22 22:48:02,001 - DEBUG - Top 5: div 33.37
+2025-11-22 22:48:02,002 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.273 for its weight 0.
+2025-11-22 22:48:02,002 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:48:02,003 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.930 for its weight 0.
+2025-11-22 22:48:02,003 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:48:02,003 - DEBUG - Removed  0.000 ul with weight 0 cause it has too short content length 13 without a single image.
+2025-11-22 22:48:02,003 - DEBUG - Removed  0.000 ul with weight 0 cause it has too short content length 4 without a single image.
+2025-11-22 22:48:02,004 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.875 for its weight 0.
+2025-11-22 22:48:02,004 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:48:02,004 - DEBUG - Removed  0.000 ul with weight 0 cause it has too short content length 19 without a single image.
+2025-11-22 22:48:02,005 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.879 for its weight 0.
+2025-11-22 22:48:02,005 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:48:02,005 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.891 for its weight 0.
+2025-11-22 22:48:02,006 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:48:02,006 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.870 for its weight 0.
+2025-11-22 22:48:02,006 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.917 for its weight 0.
+2025-11-22 22:48:02,007 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.878 for its weight 0.
+2025-11-22 22:48:02,007 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:48:02,007 - DEBUG - Removed  0.000 table with weight 0 cause it has too short content length 21 without a single image.
+2025-11-22 22:48:02,007 - DEBUG - Removed  0.000 ul with weight 0 cause it has too many links 0.912 for its weight 0.
+2025-11-22 22:48:02,007 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:48:02,008 - DEBUG - Removed  0.000 div with weight 0 cause it has too many links 0.820 for its weight 0.
+2025-11-22 22:48:02,008 - DEBUG - Removed  0.000 ul with weight 0 cause it has too short content length 3 without a single image.
+2025-11-22 22:48:02,008 - DEBUG - Removed  0.000 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:48:02,009 - DEBUG - Removed  0.000 table with weight 0 cause it has too many links 1.000 for its weight 0.
+2025-11-22 22:48:02,009 - DEBUG - Removed 102.936 div with weight 0 cause it has too short content length 0 without a single image.
+2025-11-22 22:48:02,009 - DEBUG - Removed 102.936 ul with weight 0 cause it has too many links 0.462 for its weight 0.
+2025-11-22 22:48:02,009 - DEBUG - Removed 102.936 div with weight 0 cause it has too short content length 16 without a single image.
+2025-11-22 22:48:02,010 - DEBUG - Removed 102.936 ul with weight 0 cause it has too many links 0.922 for its weight 0.
+2025-11-22 22:48:02,010 - DEBUG - Removed 102.936 div with weight 0 cause it has too short content length 14 without a single image.
+2025-11-22 22:48:02,010 - DEBUG - Removed 102.936 div with weight 0 cause it has too many links 0.317 for its weight 0.
+2025-11-22 22:48:02,011 - DEBUG - Removed 102.936 div with weight 0 cause it has too many links 0.517 for its weight 0.
+2025-11-22 22:48:02,011 - DEBUG - Removed 102.936 div with weight 0 cause it has too short content length 16 without a single image.
+2025-11-22 22:48:02,011 - DEBUG - Removed 102.936 div with weight 0 cause it has too short content length 16 without a single image.
+2025-11-22 22:48:02,016 - DEBUG - extracted length: 12393 (algorithm) 12459 (extraction)
+2025-11-22 22:48:02,016 - DEBUG - extraction values: 12459 12393 for None
+2025-11-22 22:48:02,016 - DEBUG - using custom extraction: None
+2025-11-22 22:48:02,017 - DEBUG - not enough comments: None
+2025-11-22 22:48:02,031 - DEBUG - Extracted 12511 chars from https://en.wikipedia.org/wiki/Unix_filesystem
+2025-11-22 22:48:02,031 - DEBUG - Extracted 12511 chars from https://en.wikipedia.org/wiki/Unix_filesystem
+2025-11-22 22:48:02,033 - DEBUG - Similarity for https://en.wikipedia.org/wiki/Unix_filesystem: 0.01006036217303823
+2025-11-22 22:48:03,347 - INFO - Search complete. Total matches: 0
