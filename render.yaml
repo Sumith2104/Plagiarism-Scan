@@ -1,0 +1,34 @@
+services:
+  # 1. FastAPI Backend Web Service
+  - type: web
+    name: plagiarism-scan-backend
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: USE_FLUXBASE
+        value: "true"
+      - key: FLUXBASE_PROJECT_ID
+        sync: false # User will input this in the Render Dashboard
+      - key: FLUXBASE_API_KEY
+        sync: false # User will input this in the Render Dashboard
+      - key: QDRANT_PATH
+        value: "qdrant_storage"
+
+  # 2. React Frontend Static Site
+  - type: web
+    name: plagiarism-scan-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    publishPath: frontend/dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false # User will set this to: https://plagiarism-scan-backend.onrender.com/api/v1
