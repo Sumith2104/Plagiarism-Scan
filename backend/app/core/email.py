@@ -109,12 +109,24 @@ def send_welcome_email(to_email: str, full_name: str = None):
     msg.attach(MIMEText(body, 'html'))
 
     try:
-        # Connect to Gmail SMTP server
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-        logger.info(f"Welcome email sent to {to_email}")
+        print(f"DEBUG: Attempting to send welcome email to {to_email} via Gmail SMTP...")
+        # Try port 587 first (STARTTLS)
+        try:
+            print("DEBUG: Connecting to smtp.gmail.com:587 (STARTTLS)...")
+            server = smtplib.SMTP('smtp.gmail.com', 587, timeout=10)
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+            server.quit()
+            print(f"DEBUG: Welcome email sent successfully to {to_email} via port 587!")
+            return
+        except Exception as e587:
+            print(f"DEBUG: Port 587 failed: {e587}. Trying fallback to port 465 (SSL)...")
+            # Try port 465 fallback (SSL)
+            server = smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10)
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+            server.quit()
+            print(f"DEBUG: Welcome email sent successfully to {to_email} via port 465 fallback!")
     except Exception as e:
-        logger.error(f"Failed to send welcome email to {to_email}: {e}")
+        print(f"CRITICAL ERROR: Failed to send welcome email to {to_email}: {e}")
