@@ -25,18 +25,25 @@ def _get_global_client():
         import os
         storage_path = os.path.abspath("qdrant_storage")
         os.makedirs(storage_path, exist_ok=True)
-        _qdrant_singleton = QdrantClient(path=storage_path)
+        try:
+            _qdrant_singleton = QdrantClient(path=storage_path)
+        except Exception as lock_err:
+            print(f"WARNING: Qdrant storage locked: {lock_err}. Falling back to in-memory mode.")
+            _qdrant_singleton = QdrantClient(":memory:")
 
     # Ensure collection exists
     collection_name = "plagiascan_chunks"
     try:
         _qdrant_singleton.get_collection(collection_name)
     except Exception:
-        print(f"Creating Qdrant collection: {collection_name}")
-        _qdrant_singleton.create_collection(
-            collection_name=collection_name,
-            vectors_config=models.VectorParams(size=384, distance=models.Distance.COSINE)
-        )
+        try:
+            print(f"Creating Qdrant collection: {collection_name}")
+            _qdrant_singleton.create_collection(
+                collection_name=collection_name,
+                vectors_config=models.VectorParams(size=384, distance=models.Distance.COSINE)
+            )
+        except Exception as create_err:
+            print(f"WARNING: Could not create collection: {create_err}")
 
     return _qdrant_singleton
 
@@ -92,16 +99,20 @@ class VectorDB:
                 score_threshold=score_threshold,
                 query_filter=filter_condition
             )
-        except AttributeError:
-            response = client.query_points(
-                collection_name=self.collection_name,
-                query=vector,
-                limit=limit,
-                score_threshold=score_threshold,
-                query_filter=filter_condition,
-                with_payload=True
-            )
-            results = response.points
+        except Exception:
+            try:
+                response = client.query_points(
+                    collection_name=self.collection_name,
+                    query=vector,
+                    limit=limit,
+                    score_threshold=score_threshold,
+                    query_filter=filter_condition,
+                    with_payload=True
+                )
+                results = response.points
+            except Exception as ex:
+                print(f"Vector search exception: {ex}")
+                return []
 
         return [
             {

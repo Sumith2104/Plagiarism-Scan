@@ -30,6 +30,22 @@ def startup_event():
             from app.db.session import engine
             from app.models import Base
             Base.metadata.create_all(bind=engine, checkfirst=True)
+            # Safe schema auto-migration for newly added columns in SQLite
+            try:
+                from sqlalchemy import text
+                with engine.connect() as conn:
+                    # Check columns in scans table
+                    result = conn.execute(text("PRAGMA table_info(scans)"))
+                    existing_cols = [row[1] for row in result.fetchall()]
+                    if "scan_mode" not in existing_cols:
+                        conn.execute(text("ALTER TABLE scans ADD COLUMN scan_mode VARCHAR DEFAULT 'standard'"))
+                    if "agent_trace" not in existing_cols:
+                        conn.execute(text("ALTER TABLE scans ADD COLUMN agent_trace JSON"))
+                    if "citations_detected" not in existing_cols:
+                        conn.execute(text("ALTER TABLE scans ADD COLUMN citations_detected JSON"))
+                    conn.commit()
+            except Exception as mig_err:
+                print(f"DEBUG: SQLite column migration check: {mig_err}")
             print("DEBUG: SQLite tables ready - OK")
         except Exception as e:
             print(f"Critical Database Setup Failed: {e}")
@@ -42,10 +58,15 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
         "https://plagiascan.vercel.app",
-        "https://plagiarism-scan.vercel.app", # Just in case
-        "*" # Allow all for now to debug
+        "https://plagiarism-scan.vercel.app",
     ],
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

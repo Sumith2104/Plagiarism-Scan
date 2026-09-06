@@ -35,7 +35,7 @@ class FluxbaseClient:
             "Content-Type": "application/json",
         }
 
-    def execute(self, sql: str) -> List[Dict[str, Any]]:
+    def execute(self, sql: str, silent: bool = False) -> List[Dict[str, Any]]:
         """
         Execute a raw SQL statement and return the rows.
         Returns an empty list for non-SELECT statements.
@@ -52,12 +52,13 @@ class FluxbaseClient:
                 headers=self._headers(),
                 timeout=30,
             )
-            if resp.status_code != 200:
+            if resp.status_code != 200 and not silent:
                 print(f"Fluxbase Error HTTP {resp.status_code}: {resp.text}")
             resp.raise_for_status()
             data = resp.json()
         except requests.RequestException as e:
-            print(f"Fluxbase network error: {e}")
+            if not silent:
+                print(f"Fluxbase network error: {e}")
             raise RuntimeError(f"Fluxbase network error: {e}") from e
 
         if not data.get("success"):
@@ -214,8 +215,11 @@ def initialize_fluxbase_tables():
             document_id INT,
             initiated_by INT,
             status VARCHAR(50) DEFAULT 'queued',
+            scan_mode VARCHAR(50) DEFAULT 'standard',
             overall_score FLOAT,
             report_data JSON,
+            agent_trace JSON,
+            citations_detected JSON,
             progress INT DEFAULT 0,
             current_step VARCHAR(255),
             created_at DATETIME DEFAULT NOW(),
@@ -247,3 +251,14 @@ def initialize_fluxbase_tables():
             logger.info(f"Table '{table_name}' ready in Fluxbase.")
         except Exception as e:
             logger.warning(f"Table '{table_name}' DDL skipped: {e}")
+
+    # Auto-migrate scans table if columns are missing
+    for col_def in [
+        ("scan_mode", "ALTER TABLE scans ADD COLUMN scan_mode VARCHAR(50) DEFAULT 'standard';"),
+        ("agent_trace", "ALTER TABLE scans ADD COLUMN agent_trace JSON;"),
+        ("citations_detected", "ALTER TABLE scans ADD COLUMN citations_detected JSON;")
+    ]:
+        try:
+            client.execute(col_def[1], silent=True)
+        except Exception:
+            pass # column already exists

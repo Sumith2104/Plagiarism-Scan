@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Report from './pages/Report';
+import Verify from './pages/Verify';
 import './index.css';
 
 function ProtectedRoute({ children }) {
@@ -30,6 +31,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/verify/:scanId" element={<Verify />} />
       </Routes>
     </Router>
   );

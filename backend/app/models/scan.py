@@ -17,10 +17,13 @@ class Scan(Base):
     document_id = Column(Integer, ForeignKey("documents.id"))
     initiated_by = Column(Integer, ForeignKey("users.id"))
     status = Column(Enum(ScanStatus), default=ScanStatus.QUEUED)
+    scan_mode = Column(String, default="standard")  # "standard" | "deep_agentic"
     progress = Column(Integer, default=0)
     current_step = Column(String, nullable=True)
     overall_score = Column(Float, default=0.0)
     report_data = Column(JSON)
+    agent_trace = Column(JSON, nullable=True)
+    citations_detected = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     completed_at = Column(DateTime(timezone=True))
     

@@ -150,6 +150,11 @@ class FluxbaseQuery:
         return client.execute(sql)
 
     def _map_row_to_model(self, row):
+        obj_id = row.get("id")
+        if self.session and obj_id is not None and (self.model.__tablename__, obj_id) in self.session._identity_map:
+            obj, _ = self.session._identity_map[(self.model.__tablename__, obj_id)]
+            return obj
+
         obj = self.model()
         for key in self.model.__mapper__.columns.keys():
             if key in row:
@@ -234,7 +239,7 @@ class FluxbaseSession:
                     elif isinstance(encoded_val, bool):
                         formatted_val = "1" if encoded_val else "0"
                     elif isinstance(encoded_val, (dict, list)):
-                        json_str = json.dumps(encoded_val).replace("'", "''")
+                        json_str = json.dumps(encoded_val).replace("\\", "\\\\").replace("'", "''")
                         formatted_val = f"'{json_str}'"
                     else:
                         formatted_val = str(encoded_val)
@@ -354,7 +359,7 @@ class FluxbaseSession:
                 elif isinstance(encoded_val, (int, float)):
                     vals.append(str(encoded_val))
                 elif isinstance(encoded_val, (dict, list)):
-                    json_str = json.dumps(encoded_val).replace("'", "''")
+                    json_str = json.dumps(encoded_val).replace("\\", "\\\\").replace("'", "''")
                     vals.append(f"'{json_str}'")
                 else:
                     val_str_escaped = str(encoded_val).replace("'", "''")

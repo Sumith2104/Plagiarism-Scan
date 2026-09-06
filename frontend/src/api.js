@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api/v1`;
+const isDevServer = typeof window !== 'undefined' && (window.location.port === '5173' || window.location.port === '3000');
+const API_BASE_URL = import.meta.env.VITE_API_URL || (isDevServer ? `http://${window.location.hostname}:8000/api/v1` : '/api/v1');
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -38,8 +39,12 @@ export const documentsAPI = {
 };
 
 export const scansAPI = {
-    initiate: (documentId) => api.post('/scans/', { document_id: documentId }),
+    initiate: (documentId, scanMode = 'standard') =>
+        api.post('/scans/', { document_id: documentId, scan_mode: scanMode }),
     get: (id) => api.get(`/scans/${id}`),
+    getTrace: (id) => api.get(`/scans/${id}/trace`),
+    verify: (id) => api.get(`/scans/${id}/verify`),
+    collusionMatrix: (documentIds) => api.post('/scans/collusion-matrix', { document_ids: documentIds }),
 };
 
 export default api;
