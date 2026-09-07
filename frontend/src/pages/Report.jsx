@@ -57,20 +57,46 @@ function generateCitations({ title, url, author = '' }) {
     };
 }
 
+const DIFF_STOP_WORDS = new Set([
+    'in', 'the', 'a', 'an', 'to', 'of', 'and', 'or', 'is', 'was', 'were',
+    'for', 'on', 'at', 'by', 'with', 'as', 'it', 'its', 'be', 'are', 'that', 'this'
+]);
+
 function renderDiffTokens(text, referenceText, highlightColor = 'red') {
     if (!text) return null;
+    if (!referenceText) return <span>{text}</span>;
+
     const refWords = new Set(
-        (referenceText || '')
+        referenceText
             .toLowerCase()
-            .replace(/[^\w\s]/g, '')
+            .replace(/[^\w\s]/g, ' ')
             .split(/\s+/)
-            .filter(w => w.length > 3)
+            .filter(Boolean)
     );
 
-    const words = text.split(/(\s+)/);
-    return words.map((chunk, idx) => {
-        const cleanChunk = chunk.toLowerCase().replace(/[^\w]/g, '');
-        const isMatched = cleanChunk.length > 3 && refWords.has(cleanChunk);
+    const tokens = text.split(/(\s+)/);
+    const wordsOnly = tokens.filter(t => !/^\s+$/.test(t));
+    const wordMatches = wordsOnly.map(w => {
+        const parts = w.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(Boolean);
+        return parts.length > 0 && parts.every(p => refWords.has(p));
+    });
+
+    let wordIdx = 0;
+    return tokens.map((chunk, idx) => {
+        if (/^\s+$/.test(chunk)) {
+            return <span key={idx}>{chunk}</span>;
+        }
+
+        const parts = chunk.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(Boolean);
+        const currentMatches = wordMatches[wordIdx];
+        const prevMatches = wordIdx > 0 && wordMatches[wordIdx - 1];
+        const nextMatches = wordIdx < wordMatches.length - 1 && wordMatches[wordIdx + 1];
+        wordIdx++;
+
+        const isStop = parts.every(p => DIFF_STOP_WORDS.has(p));
+        // Salient words match directly; stop words match when part of a contiguous phrase
+        const isMatched = currentMatches && (!isStop || prevMatches || nextMatches);
+
         if (isMatched) {
             return (
                 <mark

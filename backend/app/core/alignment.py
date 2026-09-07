@@ -10,6 +10,89 @@ import re
 from difflib import SequenceMatcher
 
 
+
+def split_sentences_clean(text: str) -> List[str]:
+    """
+    Split text into sentences while protecting abbreviations (e.g. S.p.A., U.S.A., Dr., Mr.)
+    and numbers/decimals.
+    """
+    if not text:
+        return []
+    # Protect common single letter dots: S.p.A., U.S.
+    text_sub = re.sub(r'\b([A-Za-z])\.', r'\1@DOT@', text)
+    # Protect common title and Latin abbreviations
+    text_sub = re.sub(r'\b(e\.g|i\.e|vs|etc|dr|mr|mrs|ms|prof|inc|corp|ltd|co)\.', r'\1@DOT@', text_sub, flags=re.IGNORECASE)
+    # Handle ellipsis and multiple dots
+    text_sub = re.sub(r'\.{2,}', ' ', text_sub)
+    raw_sents = re.split(r'(?<=[.!?])\s+|\n+', text_sub)
+    sents = []
+    for s in raw_sents:
+        s_clean = s.replace('@DOT@', '.').strip()
+        if len(s_clean.split()) >= 3:
+            sents.append(s_clean)
+    return sents
+
+
+def find_best_source_sentence(
+    suspect_sentence: str,
+    source_text: str,
+    min_similarity: float = 75.0
+) -> Optional[Dict[str, Any]]:
+    """
+    Finds the specific sentence in source_text that best matches suspect_sentence.
+    Requires high sequence fidelity (SequenceMatcher ratio or contiguous verbatim coverage).
+    Returns the complete source sentence, the similarity percentage, and matched token count.
+    Rejects loose idioms (<= 5 tokens) and matches with similarity < min_similarity.
+    """
+    suspect_tokens = SequenceAligner.tokenize(suspect_sentence)
+    if len(suspect_tokens) < 4:
+        return None
+
+    source_sentences = split_sentences_clean(source_text)
+    if not source_sentences:
+        source_sentences = [source_text.strip()]
+
+    best_match = None
+    best_score = 0.0
+
+    for src_sent in source_sentences:
+        src_tokens = SequenceAligner.tokenize(src_sent)
+        if not src_tokens:
+            continue
+
+        sm = SequenceMatcher(None, suspect_tokens, src_tokens)
+        ratio = sm.ratio()
+        longest = sm.find_longest_match(0, len(suspect_tokens), 0, len(src_tokens))
+        longest_ratio = longest.size / len(suspect_tokens) if suspect_tokens else 0.0
+
+        # Effective similarity balances overall sequence alignment and longest contiguous phrase
+        effective_score = max(ratio, longest_ratio) * 100
+
+        # Stricter for short sentences (< 8 tokens): require at least 80% similarity or 6 contiguous tokens
+        if len(suspect_tokens) < 8 and longest.size < 6 and ratio < 0.80:
+            continue
+
+        # Common idioms (<= 5 tokens) without surrounding sequence match must never trigger
+        if longest.size <= 5 and ratio < 0.70:
+            continue
+
+        if effective_score > best_score:
+            best_score = effective_score
+            matched_phrase = " ".join(suspect_tokens[longest.a : longest.a + longest.size])
+            best_match = {
+                "source_sentence": src_sent,
+                "similarity": round(effective_score, 2),
+                "ratio": round(ratio, 4),
+                "longest_match_tokens": longest.size,
+                "longest_match_ratio": round(longest_ratio, 4),
+                "matched_text": matched_phrase
+            }
+
+    if best_match and best_match["similarity"] >= min_similarity:
+        return best_match
+    return None
+
+
 class SequenceAligner:
     """
     Computes fine-grained alignment between two text segments.
@@ -19,7 +102,7 @@ class SequenceAligner:
       - Mosaic plagiarism (interspersed fragments from a source)
     """
 
-    def __init__(self, min_matching_tokens: int = 4):
+    def __init__(self, min_matching_tokens: int = 6):
         self.min_matching_tokens = min_matching_tokens
 
     @staticmethod
@@ -180,14 +263,18 @@ class SequenceAligner:
         composite_score = (verbatim_ratio * 0.50) + (lcs_ratio * 0.30) + (containment * 0.20)
         composite_score = round(min(1.0, max(0.0, composite_score)) * 100, 2)
 
-        # 6. Categorization
-        if composite_score >= 70 or verbatim_ratio >= 0.65:
+        # 6. Sentence-Level Match Verification
+        best_sent_match = find_best_source_sentence(text_a, text_b, min_similarity=60.0)
+        best_sent_sim = best_sent_match["similarity"] if best_sent_match else 0.0
+
+        # 7. Categorization with High Fidelity Thresholds
+        if (composite_score >= 70 and verbatim_ratio >= 0.50) or verbatim_ratio >= 0.65 or best_sent_sim >= 85.0:
             classification = "verbatim_plagiarism"
-        elif mosaic_blocks and composite_score >= 35:
+        elif mosaic_blocks and composite_score >= 50:
             classification = "mosaic_plagiarism"
-        elif composite_score >= 40:
+        elif composite_score >= 60 or best_sent_sim >= 75.0:
             classification = "paraphrase_plagiarism"
-        elif composite_score >= 20:
+        elif composite_score >= 45:
             classification = "loose_overlap"
         else:
             classification = "negligible"
@@ -200,6 +287,7 @@ class SequenceAligner:
             "containment": round(containment, 4),
             "verbatim_blocks": verbatim_blocks,
             "mosaic_blocks": mosaic_blocks,
+            "best_sentence_match": best_sent_match,
             "classification": classification
         }
 

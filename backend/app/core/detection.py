@@ -5,7 +5,7 @@ from app.models.scan import Scan, ScanStatus
 from app.core.ml import Chunker, EmbeddingModel
 from app.db.vector import VectorDB
 from app.core.scraper.distiller import WebDistiller
-from app.core.alignment import SequenceAligner
+from app.core.alignment import SequenceAligner, find_best_source_sentence, split_sentences_clean
 from app.core.readability import compute_readability_metrics
 import math
 import re
@@ -185,7 +185,7 @@ def search_bing(query: str, max_results: int = 3) -> List[Dict[str, str]]:
 
 def is_result_relevant(query_str: str, title_str: str, snippet_str: str) -> bool:
     """
-    Validates that search result contains at least one non-stop word from the query,
+    Validates that search result contains salient keywords from the query,
     preventing dictionary spam or unrelated query hijacking.
     """
     q_w = set(w.lower() for w in re.sub(r'[^a-zA-Z0-9\s]', ' ', query_str).split() if len(w) > 3 and w.lower() not in STOP_WORDS)
@@ -193,7 +193,8 @@ def is_result_relevant(query_str: str, title_str: str, snippet_str: str) -> bool
         return True
     c_text = (title_str + " " + snippet_str).lower()
     c_w = set(w for w in re.sub(r'[^a-zA-Z0-9\s]', ' ', c_text).split() if len(w) > 3 and w not in STOP_WORDS)
-    return len(q_w & c_w) >= 1
+    min_overlap = 2 if len(q_w) >= 3 else 1
+    return len(q_w & c_w) >= min_overlap
 
 
 def multi_engine_web_search(query: str, max_results: int = 3) -> List[Dict[str, str]]:
@@ -386,7 +387,9 @@ def generate_line_analysis(
     line_idx = 0
 
     for p_idx, para in enumerate(paragraphs):
-        raw_sents = re.split(r'(?<=[.!?])\s+', para)
+        raw_sents = split_sentences_clean(para)
+        if not raw_sents:
+            raw_sents = [s.strip() for s in re.split(r'(?<=[.!?])\s+', para) if s.strip()]
         for s in raw_sents:
             s_clean = s.strip()
             if not s_clean or len(s_clean) < 4:
@@ -399,30 +402,26 @@ def generate_line_analysis(
             s_alnum = re.sub(r'[^a-zA-Z0-9\s]', ' ', s_lower)
             s_words_set = set(w for w in s_alnum.split() if len(w) > 3)
 
-            # 1. Check Web Match (Verified external URLs across all detected sources)
+            # 1. Check Web Match with Strict Sentence-Level Alignment (>= 75.0%)
             matched_web = None
-            if word_count >= 3 and len(s_words_set) >= 2:
-                for wm in (web_matches + [m for m in evidence_matches if isinstance(m, dict) and not (m.get("source_url") or "").startswith("internal://")]):
-                    wm_sentence = (wm.get("sentence") or wm.get("chunk_text") or wm.get("suspect_excerpt") or "").lower()
+            best_web_sent_proof = None
+
+            if word_count >= 3:
+                candidates_to_check = web_matches + [m for m in evidence_matches if isinstance(m, dict) and not (m.get("source_url") or "").startswith("internal://")]
+                for wm in candidates_to_check:
                     wm_url = wm.get("source_url") or wm.get("source") or ""
                     if not wm_url or wm_url.startswith("internal://"):
                         continue
-                    wm_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', wm_sentence)
-                    wm_words = set(w for w in wm_clean.split() if len(w) > 3)
 
-                    overlap = 0.0
-                    if wm_words and s_words_set:
-                        overlap = len(s_words_set & wm_words) / len(s_words_set)
+                    # Target source text: full article text if available, otherwise snippet or sentence
+                    target_source_text = wm.get("source_full_text") or wm.get("snippet") or wm.get("sentence") or ""
+                    if not target_source_text:
+                        continue
 
-                    # Also check if sentence belongs to any paragraph matched to this source
-                    matched_list = wm.get("matched_sentences") or []
-                    in_matched_list = any(s_lower in m.lower() or (len(s_words_set) >= 3 and len(s_words_set & set(w for w in re.sub(r'[^a-zA-Z0-9\s]', ' ', m.lower()).split() if len(w) > 3)) / len(s_words_set) >= 0.45) for m in matched_list)
-
-                    wm_snippet = (wm.get("snippet") or "").lower()
-                    in_snippet = len(s_clean) >= 20 and (s_lower in wm_snippet or wm_snippet in s_lower)
-
-                    if overlap >= 0.45 or in_matched_list or in_snippet or (len(s_clean) >= 20 and (s_lower in wm_sentence or wm_sentence in s_lower)):
+                    sent_match = find_best_source_sentence(s_clean, target_source_text, min_similarity=75.0)
+                    if sent_match:
                         matched_web = wm
+                        best_web_sent_proof = sent_match
                         break
 
             # 2. Check ML / Internal Vector Match
@@ -460,16 +459,20 @@ def generate_line_analysis(
                 ai_reason = "Uniform sentence distribution characteristic of LLMs"
 
             # Determine classification
-            if matched_web:
+            if matched_web and best_web_sent_proof:
                 category = "web"
-                confidence = 94.0
+                sim_val = best_web_sent_proof.get("similarity", 92.0)
+                confidence = round(min(99.0, max(75.0, sim_val)), 1)
+                m_type = "Verbatim Match" if sim_val >= 85.0 else "Paraphrased Match"
+                full_source_sentence = best_web_sent_proof.get("source_sentence") or matched_web.get("snippet", "")
                 web_proof = {
                     "source_title": matched_web.get("source_title", "Web Source"),
                     "source_url": matched_web.get("source_url") or matched_web.get("source", ""),
-                    "snippet": matched_web.get("snippet") or matched_web.get("source_excerpt", ""),
-                    "match_type": matched_web.get("match_type", "web_match")
+                    "snippet": full_source_sentence,
+                    "similarity": sim_val,
+                    "match_type": m_type
                 }
-                reason = f"Direct overlap verified on public internet: {web_proof['source_title']}"
+                reason = f"Direct overlap verified on public internet: {web_proof['source_title']} ({sim_val}% match)"
             elif matched_internal:
                 category = "ml"
                 best = matched_internal.get("best_match", {})
@@ -745,29 +748,32 @@ class DetectionEngine:
                 self._update_progress(scan_id, pct, f"Checking section {sec_pos+1}/{len(sampled_indices)} against search engines...")
 
             p = raw_paragraphs[sec_idx]
-            p_norm = re.sub(r'([a-z])([A-Z])', r'\1 \2', p)
+            # Clean citations [1], parentheticals, and camelCase splits
+            p_clean_wiki = re.sub(r'\[[a-zA-Z0-9_\s]{1,10}\]', ' ', p)
+            p_clean_wiki = re.sub(r'\([a-zA-Z0-9_\s]{1,25}\)', ' ', p_clean_wiki)
+            p_norm = re.sub(r'([a-z])([A-Z])', r'\1 \2', p_clean_wiki)
             p_norm = re.sub(r'([A-Z]{2,})([a-z])', r'\1 \2', p_norm)
             p_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', p_norm)
-            words = p_clean.split()
-            if len(words) < 5:
+            words = [w for w in p_clean.split() if len(w) > 1 or w.lower() in ('a', 'i')]
+            if len(words) < 4:
                 continue
 
             queries = []
-            # Query 1: Lead 9 words
-            queries.append(" ".join(words[:9]))
-            # Query 2: Salient/middle 9 words (bypasses starting typos or generic introductory clauses)
-            if len(words) >= 15:
-                queries.append(" ".join(words[5:14]))
-            # Query 3: Late 9 words if paragraph is long
-            if len(words) >= 22:
-                queries.append(" ".join(words[12:21]))
+            # Query 1: Lead 8 words
+            queries.append(" ".join(words[:8]))
+            # Query 2: Salient/middle 8 words (bypasses starting typos or generic introductory clauses)
+            if len(words) >= 14:
+                queries.append(" ".join(words[5:13]))
+            # Query 3: Late 8 words if paragraph is long
+            if len(words) >= 20:
+                queries.append(" ".join(words[11:19]))
             # Query 4: 2nd sentence lead if multi-sentence
-            sents = [s.strip() for s in re.split(r'(?<=[.!?])\s+', p) if len(s.strip().split()) >= 4]
+            sents = split_sentences_clean(p)
             if len(sents) > 1:
                 s2_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', sents[1])
-                s2_w = s2_clean.split()
-                if len(s2_w) >= 5:
-                    queries.append(" ".join(s2_w[:9]))
+                s2_w = [w for w in s2_clean.split() if len(w) > 1 or w.lower() in ('a', 'i')]
+                if len(s2_w) >= 4:
+                    queries.append(" ".join(s2_w[:8]))
 
             section_sources[sec_idx] = []
             for q_num, q in enumerate(queries):
@@ -844,7 +850,7 @@ class DetectionEngine:
             self._update_progress(scan_id, 82, f"Aligning content across {len(scraped_texts)} candidate web sources...")
 
         # 5. Multi-Source Alignment: Check each paragraph against ALL candidate sources!
-        # Collect all verified distinct websites!
+        # Strict sentence-level verification (>= 75%) and full source sentence extraction
         matched_sources_map = {}
         matched_paragraphs_count = 0
         verbatim_paragraphs_count = 0
@@ -854,26 +860,58 @@ class DetectionEngine:
             best_sim_for_p = 0.0
             best_src_for_p = None
             best_align_for_p = None
+            best_sentence_for_p = None
+
+            p_sents = split_sentences_clean(p)
+            if not p_sents:
+                p_sents = [p]
 
             for st in scraped_texts:
                 alignment = self.aligner.align_texts(p, st["clean_text"])
                 sim = alignment.get("similarity_score", 0.0)
-                if sim >= 22.0 and sim > best_sim_for_p:
-                    best_sim_for_p = sim
+                sent_match = alignment.get("best_sentence_match")
+
+                # Check all sentences in this paragraph for direct high-fidelity alignment
+                if not sent_match or sent_match["similarity"] < 75.0:
+                    for s in p_sents:
+                        sm = find_best_source_sentence(s, st["clean_text"], min_similarity=75.0)
+                        if sm and (not sent_match or sm["similarity"] > sent_match["similarity"]):
+                            sent_match = sm
+
+                effective_sim = max(sim, sent_match["similarity"] if sent_match else 0.0)
+
+                # Strict acceptance:
+                # EITHER a verified sentence match >= 75%,
+                # OR strong paragraph verbatim alignment (sim >= 65% with verbatim_ratio >= 0.50)
+                is_valid_match = (sent_match is not None and sent_match["similarity"] >= 75.0) or \
+                                 (sim >= 65.0 and alignment.get("verbatim_ratio", 0.0) >= 0.50)
+
+                if is_valid_match and effective_sim > best_sim_for_p:
+                    best_sim_for_p = effective_sim
                     best_src_for_p = st
                     best_align_for_p = alignment
+                    best_sentence_for_p = sent_match
 
-            if best_src_for_p and best_sim_for_p >= 22.0:
+            if best_src_for_p:
                 matched_paragraphs_count += 1
                 cls = best_align_for_p.get("classification", "web_match")
-                if cls == "verbatim_plagiarism":
+                if cls == "verbatim_plagiarism" or (best_sentence_for_p and best_sentence_for_p["similarity"] >= 85.0):
                     verbatim_paragraphs_count += 1
 
+                # Complete source sentence snippet (never truncated to 4-word fragments)
                 source_snippet = ""
-                if best_align_for_p.get("verbatim_blocks"):
-                    source_snippet = best_align_for_p["verbatim_blocks"][0].get("matched_tokens", "")[:250]
-                elif best_src_for_p.get("snippet"):
-                    source_snippet = best_src_for_p["snippet"][:250]
+                if best_sentence_for_p:
+                    source_snippet = best_sentence_for_p["source_sentence"]
+                elif best_align_for_p.get("verbatim_blocks"):
+                    v_phrase = best_align_for_p["verbatim_blocks"][0].get("matched_tokens", "")
+                    clean_source = best_src_for_p["clean_text"]
+                    idx = clean_source.lower().find(v_phrase.lower())
+                    if idx != -1:
+                        start_c = max(0, idx - 40)
+                        end_c = min(len(clean_source), idx + len(v_phrase) + 120)
+                        source_snippet = clean_source[start_c:end_c].strip()
+                    else:
+                        source_snippet = best_src_for_p["clean_text"][:250]
                 else:
                     source_snippet = best_src_for_p["clean_text"][:250]
 
@@ -883,15 +921,16 @@ class DetectionEngine:
                         "sentence": p,
                         "source_title": best_src_for_p["title"],
                         "source_url": url,
+                        "source_full_text": best_src_for_p["clean_text"],
                         "snippet": source_snippet,
-                        "similarity_score": best_sim_for_p,
+                        "similarity_score": round(best_sim_for_p, 2),
                         "match_type": cls,
                         "matched_sentences": [p]
                     }
                 else:
                     matched_sources_map[url]["matched_sentences"].append(p)
                     if best_sim_for_p > matched_sources_map[url]["similarity_score"]:
-                        matched_sources_map[url]["similarity_score"] = best_sim_for_p
+                        matched_sources_map[url]["similarity_score"] = round(best_sim_for_p, 2)
                         matched_sources_map[url]["sentence"] = p
                         matched_sources_map[url]["snippet"] = source_snippet
                         matched_sources_map[url]["match_type"] = cls
@@ -900,23 +939,20 @@ class DetectionEngine:
         for s in raw_sentences:
             for st in scraped_texts:
                 url = st["url"]
-                alignment = self.aligner.align_texts(s, st["clean_text"])
-                sim = alignment.get("similarity_score", 0.0)
-                if sim >= 35.0:
-                    cls = alignment.get("classification", "web_match")
-                    source_snippet = ""
-                    if alignment.get("verbatim_blocks"):
-                        source_snippet = alignment["verbatim_blocks"][0].get("matched_tokens", "")[:250]
-                    else:
-                        source_snippet = st["clean_text"][:250]
+                sent_match = find_best_source_sentence(s, st["clean_text"], min_similarity=75.0)
+                if sent_match:
+                    sim = sent_match["similarity"]
+                    cls = "verbatim_plagiarism" if sim >= 85.0 else "paraphrase_plagiarism"
+                    source_snippet = sent_match["source_sentence"]
 
                     if url not in matched_sources_map:
                         matched_sources_map[url] = {
                             "sentence": s,
                             "source_title": st["title"],
                             "source_url": url,
+                            "source_full_text": st["clean_text"],
                             "snippet": source_snippet,
-                            "similarity_score": sim,
+                            "similarity_score": round(sim, 2),
                             "match_type": cls,
                             "matched_sentences": [s]
                         }
