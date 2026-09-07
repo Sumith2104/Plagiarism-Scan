@@ -108,7 +108,8 @@ SPAM_DOMAINS = [
     "bokep", "porn", "xxx", "indo18", "quinbokep", "casino", "bet", "gambl",
     "dating", "adult", "coolmathgames", "poki.com", "typing.com", "typingtest.com",
     "dictionary.cambridge", "merriam-webster.com", "thesaurus.com", "cricinfo.com",
-    "cricbuzz.com", "indiarunning.com"
+    "cricbuzz.com", "indiarunning.com", "instagram.com", "facebook.com", "twitter.com",
+    "x.com", "tiktok.com", "play.google.com", "apps.apple.com", "pinterest.com"
 ]
 
 
@@ -125,17 +126,22 @@ def search_yahoo(query: str, max_results: int = 3) -> List[Dict[str, str]]:
         "Accept-Language": "en-US,en;q=0.9",
     }
     try:
-        with httpx.Client(timeout=3.5, headers=headers, follow_redirects=True, http2=False) as client:
+        with httpx.Client(timeout=4.5, headers=headers, follow_redirects=True, http2=False) as client:
             resp = client.get(url, params={"p": query})
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, "html.parser")
-                for a in soup.find_all("a"):
+                # Specifically select organic search results headings, ignoring footer/social links
+                heading_links = soup.select("h3 a, h2 a, .compTitle a, .title a, ol.searchCenterMiddle li a")
+                target_links = heading_links if heading_links else soup.find_all("a")
+                for a in target_links:
                     href = a.get("href", "")
                     if "/RU=" in href:
                         target = urllib.parse.unquote(href.split("/RU=")[1].split("/RK=")[0])
                         if target.startswith("http") and not any(skip in target.lower() for skip in ["yahoo.com", "yahoosandbox.com"] + SPAM_DOMAINS):
                             title = a.get_text(strip=True)
-                            if title and not any(r["url"] == target for r in results):
+                            if not title or len(title) < 5 or any(nav in title.lower() for nav in ["sign in", "help", "terms", "privacy", "settings", "feedback"]):
+                                continue
+                            if not any(r["url"] == target for r in results):
                                 results.append({"title": title, "url": target, "snippet": ""})
                                 if len(results) >= max_results:
                                     break
@@ -314,7 +320,7 @@ def fetch_web_page_text(url: str) -> Optional[str]:
         "Accept-Language": "en-US,en;q=0.9",
     }
     try:
-        with httpx.Client(follow_redirects=True, timeout=3.5, headers=browser_headers, verify=False, http2=False) as client:
+        with httpx.Client(follow_redirects=True, timeout=7.0, headers=browser_headers, verify=False, http2=False) as client:
             resp = client.get(url)
             if resp.status_code == 200:
                 distilled = WebDistiller.distill(resp.text, url=url)
