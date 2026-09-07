@@ -368,6 +368,32 @@ HALLMARK_PATTERNS = [
 ]
 
 
+def extract_proper_noun_phrases(text: str) -> List[str]:
+    """
+    Extracts consecutive capitalized words as coherent entity phrases.
+    E.g. 'The Eiffel Tower is on Champ de Mars' -> ['Eiffel Tower', 'Champ', 'Mars']
+    """
+    words = text.split()
+    phrases = []
+    current = []
+    skip_leads = {
+        "the", "a", "an", "this", "that", "these", "those", "in", "on", "at", "by",
+        "for", "with", "from", "when", "where", "which", "although", "however",
+        "therefore", "furthermore", "moreover", "it", "its", "they", "their", "we", "our"
+    }
+    for w in words:
+        clean_w = w.strip('.,()[]{}"\':;')
+        if clean_w and clean_w[0].isupper() and len(clean_w) > 1 and clean_w.lower() not in skip_leads:
+            current.append(clean_w)
+        else:
+            if current:
+                phrases.append(" ".join(current))
+                current = []
+    if current:
+        phrases.append(" ".join(current))
+    return phrases
+
+
 def generate_line_analysis(
     full_text: str,
     web_matches: List[Dict[str, Any]] = None,
@@ -765,11 +791,9 @@ class DetectionEngine:
                 continue
 
             queries = []
-            # Query 0: Salient entity / proper noun query (e.g. "FastAPI", "Automobili Lamborghini", "PyTorch")
-            raw_p_words = p.split()
-            cap_entities = [w.strip('.,()[]{}"\'') for w in raw_p_words if w and w[0].isupper() and len(w) > 1 and w.lower() not in STOP_WORDS]
-            if cap_entities:
-                queries.append(" ".join(cap_entities[:3]))
+            noun_phrases = extract_proper_noun_phrases(p)
+            for np in noun_phrases[:2]:
+                queries.append(np)
 
             # Query 1: Lead 7 words
             queries.append(" ".join(words[:7]))
@@ -780,8 +804,8 @@ class DetectionEngine:
                 queries.append(" ".join(salient_words[:6]))
 
             # Query 3: Entity + documentation / overview if entity exists
-            if cap_entities:
-                queries.append(f"{cap_entities[0]} documentation")
+            if noun_phrases:
+                queries.append(f"{noun_phrases[0]} documentation")
 
             # Query 4: Salient words from second half
             if len(salient_words) >= 8:
