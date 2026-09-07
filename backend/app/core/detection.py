@@ -544,49 +544,61 @@ class DetectionEngine:
 
     def _web_plagiarism_check(self, full_text: str, chunks: List[str]):
         """
-        Multi-engine web search (DDGS Lite, DDGS HTML, direct DDG Lite HTTP fallback, Wikipedia API)
-        with deep scraping, snippet fallback, and sequence alignment.
+        Multi-engine web search (DDGS Lite, DDGS HTML, direct DDG Lite fallback, Wikipedia API)
+        with paragraph-level query sampling, deep scraping, and multi-source sequence alignment.
         Returns (web_matches, web_score, verbatim_score).
         """
-        cleaned_text = re.sub(r'\[\d+\]|\\\[\d+|\d+\\\[\d+|\[.*?\]', '', full_text)
-        sentences = re.split(r'(?<=[.!?])\s+', cleaned_text.strip())
-        candidates = []
-        for s in sentences:
-            s_clean = re.sub(r'\s+', ' ', s).strip()
-            word_count = len(s_clean.split())
-            if 6 <= word_count <= 40 and len(s_clean) >= 30:
-                candidates.append(s_clean)
+        cleaned_text = re.sub(r'\[\d+\]|\\\[\d+|\d+\\\[\d+|\[.*?\]', '', full_text).strip()
+        if not cleaned_text:
+            return [], 0.0, 0.0
 
-        if not candidates:
-            candidates = [re.sub(r'\s+', ' ', c[:180]).strip() for c in chunks if len(c.strip()) > 30]
+        # 1. Segment text into paragraphs and individual sentences for multi-source detection
+        raw_paragraphs = [p.strip() for p in cleaned_text.split('\n') if len(p.strip().split()) >= 4]
+        if not raw_paragraphs:
+            raw_paragraphs = [cleaned_text]
 
-        if not candidates and full_text.strip():
-            candidates = [full_text.strip()[:180]]
+        # Also collect distinct sentences
+        raw_sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', cleaned_text) if len(s.strip().split()) >= 4]
 
-        if len(candidates) > 6:
-            step = len(candidates) // 6
-            search_sentences = [candidates[i * step] for i in range(6)]
-        else:
-            search_sentences = candidates[:6]
+        # 2. Extract search queries ensuring EVERY paragraph has targeted representation
+        search_queries = []
+        for p in raw_paragraphs:
+            p_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', p)
+            words = p_clean.split()
+            if len(words) >= 5:
+                # Query 1: Start of paragraph (8-10 words)
+                search_queries.append(" ".join(words[:10]))
+                # Query 2: Middle/distinctive part if paragraph is longer
+                if len(words) >= 16:
+                    search_queries.append(" ".join(words[6:16]))
+
+        # Also sample from sentences if few paragraphs exist
+        if len(search_queries) < 4:
+            for s in raw_sentences:
+                s_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', s)
+                words = s_clean.split()
+                if len(words) >= 5:
+                    q = " ".join(words[:10])
+                    if q not in search_queries:
+                        search_queries.append(q)
+
+        # Cap search queries to 8 to stay fast while covering all sections
+        if len(search_queries) > 8:
+            step = len(search_queries) // 8
+            search_queries = [search_queries[i * step] for i in range(8)]
 
         found_sources = []
         seen_urls = set()
 
-        for s in search_sentences:
-            s_clean_q = re.sub(r'[^a-zA-Z0-9\s]', ' ', s)
-            words = s_clean_q.split()
-            if len(words) < 4:
-                continue
-            clean_q = " ".join(words[:12])
-
+        for q in search_queries:
             query_sources = []
 
-            # 1. Try DDGS with backend='lite' then 'html'
+            # 1. DDGS with backend='lite' then 'html'
             if DDGS is not None:
                 for backend in ['lite', 'html']:
                     try:
                         with DDGS() as ddgs:
-                            for r in list(ddgs.text(clean_q, max_results=3, backend=backend)):
+                            for r in list(ddgs.text(q, max_results=3, backend=backend)):
                                 url = r.get("href", r.get("url", ""))
                                 if url and url not in seen_urls:
                                     seen_urls.add(url)
@@ -598,18 +610,18 @@ class DetectionEngine:
                         if query_sources:
                             break
                     except Exception as e:
-                        logger.warning(f"DDGS backend '{backend}' failed for '{clean_q}': {e}")
+                        logger.warning(f"DDGS backend '{backend}' failed for '{q}': {e}")
 
             # 2. Direct DDG Lite fallback if DDGS returned nothing
             if not query_sources:
-                direct_results = direct_duckduckgo_lite_search(clean_q, max_results=3)
+                direct_results = direct_duckduckgo_lite_search(q, max_results=3)
                 for r in direct_results:
                     if r["url"] not in seen_urls:
                         seen_urls.add(r["url"])
                         query_sources.append(r)
 
             # 3. Wikipedia API Search
-            wiki_results = wikipedia_search(clean_q, max_results=2)
+            wiki_results = wikipedia_search(q, max_results=2)
             for r in wiki_results:
                 if r["url"] not in seen_urls:
                     seen_urls.add(r["url"])
@@ -620,9 +632,9 @@ class DetectionEngine:
         if not found_sources:
             return [], 0.0, 0.0
 
-        # Scrape or extract text from top sources
+        # 3. Scrape or extract text from top sources (up to 10 sources across different domains)
         scraped_texts = []
-        for src in found_sources[:8]:
+        for src in found_sources[:10]:
             url = src["url"]
             clean_text = None
             if "wikipedia.org/wiki/" in url:
@@ -643,39 +655,78 @@ class DetectionEngine:
         if not scraped_texts:
             return [], 0.0, 0.0
 
-        web_matches = []
-        matched_chunks = 0
-        verbatim_chunks = 0
+        # 4. Multi-Source Alignment: Check each paragraph against ALL candidate sources!
+        # Do NOT break on the first source! A document can contain multiple sources!
+        matched_sources_map = {}
+        matched_paragraphs_count = 0
+        verbatim_paragraphs_count = 0
+        total_eval_units = max(len(raw_paragraphs), 1)
 
-        for chunk_idx, chunk in enumerate(chunks):
+        for p_idx, p in enumerate(raw_paragraphs):
+            best_sim_for_p = 0.0
+            best_src_for_p = None
+            best_align_for_p = None
+
             for st in scraped_texts:
+                alignment = self.aligner.align_texts(p, st["clean_text"])
+                sim = alignment.get("similarity_score", 0.0)
+                if sim >= 22.0 and sim > best_sim_for_p:
+                    best_sim_for_p = sim
+                    best_src_for_p = st
+                    best_align_for_p = alignment
+
+            if best_src_for_p and best_sim_for_p >= 22.0:
+                matched_paragraphs_count += 1
+                cls = best_align_for_p.get("classification", "web_match")
+                if cls == "verbatim_plagiarism":
+                    verbatim_paragraphs_count += 1
+
+                source_snippet = ""
+                if best_align_for_p.get("verbatim_blocks"):
+                    source_snippet = best_align_for_p["verbatim_blocks"][0].get("matched_tokens", "")[:250]
+                else:
+                    source_snippet = best_src_for_p["clean_text"][:250]
+
+                url = best_src_for_p["url"]
+                if url not in matched_sources_map or best_sim_for_p > matched_sources_map[url]["similarity_score"]:
+                    matched_sources_map[url] = {
+                        "sentence": p,
+                        "source_title": best_src_for_p["title"],
+                        "source_url": url,
+                        "snippet": source_snippet,
+                        "similarity_score": best_sim_for_p,
+                        "match_type": cls
+                    }
+
+        # Also check coarse chunks if any chunk matched a source not captured at paragraph level
+        for chunk in chunks:
+            for st in scraped_texts:
+                url = st["url"]
+                if url in matched_sources_map:
+                    continue
                 alignment = self.aligner.align_texts(chunk, st["clean_text"])
                 sim = alignment.get("similarity_score", 0.0)
-                if sim >= 25.0:
-                    matched_chunks += 1
+                if sim >= 28.0:
                     cls = alignment.get("classification", "web_match")
-                    if cls == "verbatim_plagiarism":
-                        verbatim_chunks += 1
-
                     source_snippet = ""
                     if alignment.get("verbatim_blocks"):
                         source_snippet = alignment["verbatim_blocks"][0].get("matched_tokens", "")[:250]
                     else:
                         source_snippet = st["clean_text"][:250]
 
-                    web_matches.append({
+                    matched_sources_map[url] = {
                         "sentence": chunk,
                         "source_title": st["title"],
-                        "source_url": st["url"],
+                        "source_url": url,
                         "snippet": source_snippet,
                         "similarity_score": sim,
                         "match_type": cls
-                    })
-                    break
+                    }
 
-        total_chunks = max(len(chunks), 1)
-        web_score = round((matched_chunks / total_chunks) * 100, 2)
-        verbatim_score = round((verbatim_chunks / total_chunks) * 100, 2)
+        web_matches = sorted(list(matched_sources_map.values()), key=lambda x: x["similarity_score"], reverse=True)
+        web_score = round(min(100.0, (matched_paragraphs_count / total_eval_units) * 100), 2)
+        verbatim_score = round(min(100.0, (verbatim_paragraphs_count / total_eval_units) * 100), 2)
+
         return web_matches, web_score, verbatim_score
 
     def _detect_ai_content(self, text: str) -> Dict[str, Any]:
