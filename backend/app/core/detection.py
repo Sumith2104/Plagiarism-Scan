@@ -748,32 +748,34 @@ class DetectionEngine:
                 self._update_progress(scan_id, pct, f"Checking section {sec_pos+1}/{len(sampled_indices)} against search engines...")
 
             p = raw_paragraphs[sec_idx]
-            # Clean citations [1], parentheticals, and camelCase splits
+            # Clean citations [1], parentheticals, but preserve technical words like FastAPI, PyTorch
             p_clean_wiki = re.sub(r'\[[a-zA-Z0-9_\s]{1,10}\]', ' ', p)
             p_clean_wiki = re.sub(r'\([a-zA-Z0-9_\s]{1,25}\)', ' ', p_clean_wiki)
-            p_norm = re.sub(r'([a-z])([A-Z])', r'\1 \2', p_clean_wiki)
-            p_norm = re.sub(r'([A-Z]{2,})([a-z])', r'\1 \2', p_norm)
-            p_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', p_norm)
+            p_clean = re.sub(r'[^a-zA-Z0-9\s-]', ' ', p_clean_wiki)
             words = [w for w in p_clean.split() if len(w) > 1 or w.lower() in ('a', 'i')]
             if len(words) < 4:
                 continue
 
             queries = []
-            # Query 1: Lead 8 words
-            queries.append(" ".join(words[:8]))
-            # Query 2: Salient/middle 8 words (bypasses starting typos or generic introductory clauses)
-            if len(words) >= 14:
-                queries.append(" ".join(words[5:13]))
-            # Query 3: Late 8 words if paragraph is long
-            if len(words) >= 20:
-                queries.append(" ".join(words[11:19]))
+            # Query 1: Lead 7 words
+            queries.append(" ".join(words[:7]))
+            # Query 2: Salient non-stop words (key entities and technical identifiers)
+            salient_words = [w for w in words if w.lower() not in STOP_WORDS]
+            if len(salient_words) >= 3:
+                queries.append(" ".join(salient_words[:6]))
+            # Query 3: Salient words from second half
+            if len(salient_words) >= 8:
+                queries.append(" ".join(salient_words[4:10]))
             # Query 4: 2nd sentence lead if multi-sentence
             sents = split_sentences_clean(p)
             if len(sents) > 1:
-                s2_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', sents[1])
+                s2_clean = re.sub(r'[^a-zA-Z0-9\s-]', ' ', sents[1])
                 s2_w = [w for w in s2_clean.split() if len(w) > 1 or w.lower() in ('a', 'i')]
-                if len(s2_w) >= 4:
-                    queries.append(" ".join(s2_w[:8]))
+                s2_salient = [w for w in s2_w if w.lower() not in STOP_WORDS]
+                if len(s2_salient) >= 3:
+                    queries.append(" ".join(s2_salient[:6]))
+                elif len(s2_w) >= 4:
+                    queries.append(" ".join(s2_w[:7]))
 
             section_sources[sec_idx] = []
             for q_num, q in enumerate(queries):
