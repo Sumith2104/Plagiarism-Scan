@@ -21,13 +21,15 @@ api.interceptors.request.use((config) => {
 
 export const authAPI = {
     login: (email, password) => {
-        const formData = new FormData();
-        formData.append('username', email);
-        formData.append('password', password);
-        return api.post('/auth/login', formData);
+        const params = new URLSearchParams();
+        params.append('username', (email || '').trim());
+        params.append('password', password);
+        return api.post('/auth/login', params, {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
     },
     register: (email, password, fullName) =>
-        api.post('/auth/register', null, { params: { email, password, full_name: fullName } }),
+        api.post('/auth/register', { email: (email || '').trim(), password, full_name: fullName }),
     getMe: () => api.get('/auth/me'),
 };
 

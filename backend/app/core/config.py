@@ -1,6 +1,24 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
 
+import os
+
+def _get_default_database_url() -> str:
+    env_val = os.getenv("DATABASE_URL")
+    if env_val and env_val.strip():
+        return env_val.strip()
+    data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../data"))
+    if not os.path.exists(data_dir):
+        data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../data"))
+    try:
+        os.makedirs(data_dir, exist_ok=True)
+    except Exception:
+        pass
+    if os.path.exists(data_dir):
+        db_path = os.path.join(data_dir, "plagiascan.db").replace("\\", "/")
+        return f"sqlite:///{db_path}"
+    return "sqlite:///./plagiascan.db"
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "PlagiaScan"
     API_V1_STR: str = "/api/v1"
@@ -10,8 +28,8 @@ class Settings(BaseSettings):
     FLUXBASE_API_KEY: Optional[str] = None
     FLUXBASE_PROJECT_ID: Optional[str] = None
 
-    # --- SQLite fallback (used if Fluxbase credentials not set) ---
-    DATABASE_URL: str = "sqlite:///./plagiascan.db"
+    # --- SQLite fallback (persisted in ./data/ if available) ---
+    DATABASE_URL: str = _get_default_database_url()
     
     REDIS_URL: str = "redis://localhost:6379/0" 
     
@@ -21,7 +39,7 @@ class Settings(BaseSettings):
     
     SECRET_KEY: str = "supersecretkey"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 7 days
 
     # --- Email (for notifications) ---
     EMAIL_ADDRESS: Optional[str] = None

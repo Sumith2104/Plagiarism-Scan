@@ -50,6 +50,33 @@ def startup_event():
         except Exception as e:
             print(f"Critical Database Setup Failed: {e}")
 
+    # Seed default demo account for instant access
+    try:
+        from app.db.session import SessionLocal
+        from app.models.user import User, UserRole
+        from app.core import auth
+        from sqlalchemy import func
+
+        db = SessionLocal()
+        try:
+            demo_email = "testuser1@example.com"
+            demo_user = db.query(User).filter(func.lower(User.email) == demo_email).first()
+            if not demo_user:
+                print("DEBUG: Seeding default demo user testuser1@example.com...")
+                demo_user = User(
+                    email=demo_email,
+                    password_hash=auth.get_password_hash("password123"),
+                    full_name="Demo Researcher",
+                    role=UserRole.USER
+                )
+                db.add(demo_user)
+                db.commit()
+                print("DEBUG: Demo user testuser1@example.com created successfully.")
+        finally:
+            db.close()
+    except Exception as e:
+        print(f"DEBUG: Demo user seed check: {e}")
+
 
 
 from fastapi.middleware.cors import CORSMiddleware
