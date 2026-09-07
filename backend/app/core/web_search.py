@@ -3,7 +3,15 @@ import re
 import asyncio
 from typing import List, Dict, Any
 from bs4 import BeautifulSoup
-from duckduckgo_search import DDGS
+
+try:
+    from ddgs import DDGS
+except ImportError:
+    try:
+        from duckduckgo_search import DDGS
+    except ImportError:
+        DDGS = None
+
 from difflib import SequenceMatcher
 from app.core.crawler import AsyncCrawler
 
@@ -21,7 +29,7 @@ class WebSearcher:
         return cls._instance
 
     def __init__(self):
-        self.ddgs = DDGS()
+        self.ddgs = DDGS() if DDGS else None
         self.crawler = AsyncCrawler.get_instance()
 
     def search_and_compare(self, text: str, num_results: int = 5) -> List[Dict[str, Any]]:
@@ -67,30 +75,38 @@ class WebSearcher:
 
         # 2. Perform Search (DDGS is sync, but fast enough)
         for query in queries:
-            try:
-                logger.info(f"Searching for: {query}")
-                # DDGS returns a generator, convert to list
-                # Use region='wt-wt' for global results (avoids local redirects like Zhihu)
-                results = list(self.ddgs.text(query, region='wt-wt', max_results=5))
-                logger.info(f"Found {len(results)} results for query.")
-                
-                if not results:
-                    continue
+            results = []
+            if self.ddgs:
+                for backend in ['lite', 'html']:
+                    try:
+                        logger.info(f"Searching for: {query} with backend='{backend}'")
+                        results = list(self.ddgs.text(query, region='wt-wt', max_results=5, backend=backend))
+                        if results:
+                            break
+                    except Exception as e:
+                        logger.warning(f"DDGS search failed with backend '{backend}': {e}")
 
-                for res in results:
-                    url = res['href']
-                    if url in seen_urls:
-                        continue
-                    seen_urls.add(url)
-                    
-                    urls_to_scrape.append(url)
-                    url_metadata[url] = {
-                        "title": res['title'],
-                        "snippet": res.get('body', '')
-                    }
-            except Exception as e:
-                logger.error(f"Search failed for query '{query}': {e}")
-                continue
+            if not results:
+                # Direct DDG Lite search fallback
+                try:
+                    from app.core.detection import direct_duckduckgo_lite_search
+                    direct_res = direct_duckduckgo_lite_search(query, max_results=5)
+                    results = [{"href": r["url"], "title": r["title"], "body": r["snippet"]} for r in direct_res]
+                except Exception as e:
+                    logger.warning(f"Direct DDG fallback failed: {e}")
+
+            logger.info(f"Found {len(results)} results for query.")
+            for res in results:
+                url = res.get('href') or res.get('url')
+                if not url or url in seen_urls:
+                    continue
+                seen_urls.add(url)
+                
+                urls_to_scrape.append(url)
+                url_metadata[url] = {
+                    "title": res.get('title', 'Web Source'),
+                    "snippet": res.get('body', '') or res.get('snippet', '')
+                }
 
         if not urls_to_scrape:
             return []

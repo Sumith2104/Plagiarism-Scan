@@ -9,14 +9,171 @@ from app.core.alignment import SequenceAligner
 from app.core.readability import compute_readability_metrics
 import math
 import re
+import urllib.parse
+import logging
 import httpx
+from bs4 import BeautifulSoup
+from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 try:
     from ddgs import DDGS
 except ImportError:
-    from duckduckgo_search import DDGS
+    try:
+        from duckduckgo_search import DDGS
+    except ImportError:
+        DDGS = None
 
 COMPLIANT_USER_AGENT = "PlagiaScan-Forensic/1.0 (Academic Plagiarism Detector; support@plagiascan.org)"
+BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+
+
+def direct_duckduckgo_lite_search(query: str, max_results: int = 4) -> List[Dict[str, str]]:
+    """
+    Direct zero-dependency fallback: queries DuckDuckGo Lite HTML interface directly via HTTP POST.
+    Resilient against datacenter IP API bot blocks.
+    """
+    results = []
+    url = "https://lite.duckduckgo.com/lite/"
+    headers = {
+        "User-Agent": BROWSER_USER_AGENT,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Origin": "https://lite.duckduckgo.com",
+        "Referer": "https://lite.duckduckgo.com/",
+    }
+    data = {"q": query}
+    try:
+        with httpx.Client(timeout=8.0, follow_redirects=True, headers=headers) as client:
+            resp = client.post(url, data=data)
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                for link in soup.find_all("a", class_="result-link"):
+                    raw_href = link.get("href", "")
+                    title = link.get_text().strip()
+                    target_url = raw_href
+                    if "uddg=" in raw_href:
+                        parsed = urllib.parse.urlparse(raw_href)
+                        qs = urllib.parse.parse_qs(parsed.query)
+                        if "uddg" in qs:
+                            target_url = qs["uddg"][0]
+                    elif raw_href.startswith("//"):
+                        target_url = "https:" + raw_href
+                    elif raw_href.startswith("/"):
+                        continue
+
+                    snippet = ""
+                    tr = link.find_parent("tr")
+                    if tr:
+                        snippet_tr = tr.find_next_sibling("tr")
+                        if snippet_tr:
+                            snippet_td = snippet_tr.find("td", class_="result-snippet")
+                            if snippet_td:
+                                snippet = snippet_td.get_text().strip()
+
+                    if target_url and target_url.startswith("http"):
+                        results.append({
+                            "title": title or "Web Source",
+                            "url": target_url,
+                            "snippet": snippet[:350]
+                        })
+                        if len(results) >= max_results:
+                            break
+    except Exception as e:
+        logger.warning(f"Direct DDG Lite search error: {e}")
+    return results
+
+
+def wikipedia_search(query: str, max_results: int = 3) -> List[Dict[str, str]]:
+    """
+    Search Wikipedia using their official Wikimedia Action API.
+    """
+    results = []
+    wiki_api_url = "https://en.wikipedia.org/w/api.php"
+    params = {
+        "action": "query",
+        "list": "search",
+        "srsearch": query,
+        "format": "json",
+        "srlimit": max_results
+    }
+    headers = {"User-Agent": COMPLIANT_USER_AGENT}
+    try:
+        with httpx.Client(timeout=8.0, headers=headers) as client:
+            resp = client.get(wiki_api_url, params=params)
+            if resp.status_code == 200:
+                data = resp.json()
+                for item in data.get("query", {}).get("search", []):
+                    title = item.get("title", "")
+                    clean_snippet = re.sub(r'<[^>]+>', '', item.get("snippet", "")).strip()
+                    url = f"https://en.wikipedia.org/wiki/{title.replace(' ', '_')}"
+                    results.append({
+                        "title": f"Wikipedia: {title}",
+                        "url": url,
+                        "snippet": clean_snippet[:350]
+                    })
+    except Exception as e:
+        logger.warning(f"Wikipedia search error: {e}")
+    return results
+
+
+def fetch_wikipedia_extract(url: str) -> Optional[str]:
+    """
+    Fetches the full plain-text extract of a Wikipedia article using Wikimedia API.
+    Avoids HTML scraping overhead and cloud IP blocks.
+    """
+    try:
+        page_title = url.split("/wiki/")[-1].split("#")[0].replace("_", " ")
+        api_url = "https://en.wikipedia.org/w/api.php"
+        params = {
+            "action": "query",
+            "prop": "extracts",
+            "explaintext": "1",
+            "titles": page_title,
+            "format": "json"
+        }
+        headers = {"User-Agent": COMPLIANT_USER_AGENT}
+        with httpx.Client(timeout=10.0, headers=headers) as client:
+            resp = client.get(api_url, params=params)
+            if resp.status_code == 200:
+                pages = resp.json().get("query", {}).get("pages", {})
+                for pid, pdata in pages.items():
+                    extract = pdata.get("extract")
+                    if extract and len(extract) > 100:
+                        return extract
+    except Exception as e:
+        logger.warning(f"Wikipedia extract failed for {url}: {e}")
+    return None
+
+
+def fetch_web_page_text(url: str) -> Optional[str]:
+    """
+    Fetches and distills web page text using modern browser headers and SSL fallback.
+    """
+    browser_headers = {
+        "User-Agent": BROWSER_USER_AGENT,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Sec-Ch-Ua": '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+        "Sec-Ch-Ua-Mobile": "?0",
+        "Sec-Ch-Ua-Platform": '"Windows"',
+    }
+    for verify in [True, False]:
+        try:
+            with httpx.Client(follow_redirects=True, timeout=10.0, headers=browser_headers, verify=verify) as client:
+                resp = client.get(url)
+                if resp.status_code == 200:
+                    distilled = WebDistiller.distill(resp.text, url=url)
+                    clean = distilled.get("clean_text", "")
+                    if clean and len(clean.strip()) > 50:
+                        return clean
+            break
+        except Exception:
+            if not verify:
+                break
+    return None
 
 HALLMARK_PATTERNS = [
     r'\b(has become one of the most)\b',
@@ -358,7 +515,7 @@ class DetectionEngine:
                 if not target_user and doc and doc.user_id:
                     target_user = self.db.query(User).filter(User.id == doc.user_id).first()
 
-                target_email = target_user.email if (target_user and target_user.email) else settings.EMAIL_ADDRESS
+                target_email = target_user.email if (target_user and target_user.email) else getattr(settings, "EMAIL_ADDRESS", None)
                 target_name = target_user.full_name if (target_user and target_user.full_name) else "Researcher"
 
                 if target_email:
@@ -387,7 +544,8 @@ class DetectionEngine:
 
     def _web_plagiarism_check(self, full_text: str, chunks: List[str]):
         """
-        Multi-engine web search (DDGS + Wikipedia API) with deep scraping and sequence alignment.
+        Multi-engine web search (DDGS Lite, DDGS HTML, direct DDG Lite HTTP fallback, Wikipedia API)
+        with deep scraping, snippet fallback, and sequence alignment.
         Returns (web_matches, web_score, verbatim_score).
         """
         cleaned_text = re.sub(r'\[\d+\]|\\\[\d+|\d+\\\[\d+|\[.*?\]', '', full_text)
@@ -396,11 +554,14 @@ class DetectionEngine:
         for s in sentences:
             s_clean = re.sub(r'\s+', ' ', s).strip()
             word_count = len(s_clean.split())
-            if 10 <= word_count <= 35 and len(s_clean) >= 45:
+            if 6 <= word_count <= 40 and len(s_clean) >= 30:
                 candidates.append(s_clean)
 
         if not candidates:
-            candidates = [re.sub(r'\s+', ' ', c[:180]).strip() for c in chunks if len(c) > 60]
+            candidates = [re.sub(r'\s+', ' ', c[:180]).strip() for c in chunks if len(c.strip()) > 30]
+
+        if not candidates and full_text.strip():
+            candidates = [full_text.strip()[:180]]
 
         if len(candidates) > 6:
             step = len(candidates) // 6
@@ -413,73 +574,74 @@ class DetectionEngine:
 
         for s in search_sentences:
             s_clean_q = re.sub(r'[^a-zA-Z0-9\s]', ' ', s)
-            clean_q = " ".join(s_clean_q.split()[:10])
+            words = s_clean_q.split()
+            if len(words) < 4:
+                continue
+            clean_q = " ".join(words[:12])
 
-            # 1. DDGS
-            try:
-                with DDGS() as ddgs:
-                    for r in list(ddgs.text(clean_q, max_results=3)):
-                        url = r.get("href", r.get("url", ""))
-                        if url and url not in seen_urls:
-                            seen_urls.add(url)
-                            found_sources.append({
-                                "title": r.get("title", "Web Source"),
-                                "url": url,
-                                "snippet": r.get("body", "")[:300]
-                            })
-            except Exception:
-                pass
+            query_sources = []
 
-            # 2. Wikipedia Search API with compliant User-Agent
-            try:
-                wiki_api_url = "https://en.wikipedia.org/w/api.php"
-                params = {
-                    "action": "query",
-                    "list": "search",
-                    "srsearch": clean_q,
-                    "format": "json",
-                    "srlimit": 3
-                }
-                headers = {"User-Agent": COMPLIANT_USER_AGENT}
-                with httpx.Client(timeout=8.0, headers=headers) as client:
-                    resp = client.get(wiki_api_url, params=params)
-                    if resp.status_code == 200:
-                        wiki_data = resp.json()
-                        for item in wiki_data.get("query", {}).get("search", []):
-                            page_title = item.get("title", "")
-                            page_url = f"https://en.wikipedia.org/wiki/{page_title.replace(' ', '_')}"
-                            if page_url not in seen_urls:
-                                seen_urls.add(page_url)
-                                found_sources.append({
-                                    "title": f"Wikipedia: {page_title}",
-                                    "url": page_url,
-                                    "snippet": re.sub(r'<[^>]+>', '', item.get("snippet", ""))[:300]
-                                })
-            except Exception:
-                pass
+            # 1. Try DDGS with backend='lite' then 'html'
+            if DDGS is not None:
+                for backend in ['lite', 'html']:
+                    try:
+                        with DDGS() as ddgs:
+                            for r in list(ddgs.text(clean_q, max_results=3, backend=backend)):
+                                url = r.get("href", r.get("url", ""))
+                                if url and url not in seen_urls:
+                                    seen_urls.add(url)
+                                    query_sources.append({
+                                        "title": r.get("title", "Web Source"),
+                                        "url": url,
+                                        "snippet": r.get("body", "")[:350]
+                                    })
+                        if query_sources:
+                            break
+                    except Exception as e:
+                        logger.warning(f"DDGS backend '{backend}' failed for '{clean_q}': {e}")
+
+            # 2. Direct DDG Lite fallback if DDGS returned nothing
+            if not query_sources:
+                direct_results = direct_duckduckgo_lite_search(clean_q, max_results=3)
+                for r in direct_results:
+                    if r["url"] not in seen_urls:
+                        seen_urls.add(r["url"])
+                        query_sources.append(r)
+
+            # 3. Wikipedia API Search
+            wiki_results = wikipedia_search(clean_q, max_results=2)
+            for r in wiki_results:
+                if r["url"] not in seen_urls:
+                    seen_urls.add(r["url"])
+                    query_sources.append(r)
+
+            found_sources.extend(query_sources)
 
         if not found_sources:
             return [], 0.0, 0.0
 
+        # Scrape or extract text from top sources
         scraped_texts = []
-        headers = {
-            "User-Agent": COMPLIANT_USER_AGENT,
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-        }
-        for src in found_sources[:5]:
-            try:
-                with httpx.Client(follow_redirects=True, timeout=10.0, headers=headers) as client:
-                    resp = client.get(src["url"])
-                    if resp.status_code == 200:
-                        distilled = WebDistiller.distill(resp.text, url=src["url"])
-                        if distilled.get("clean_text"):
-                            scraped_texts.append({
-                                "title": src["title"],
-                                "url": src["url"],
-                                "clean_text": distilled["clean_text"]
-                            })
-            except Exception:
-                pass
+        for src in found_sources[:8]:
+            url = src["url"]
+            clean_text = None
+            if "wikipedia.org/wiki/" in url:
+                clean_text = fetch_wikipedia_extract(url)
+            if not clean_text:
+                clean_text = fetch_web_page_text(url)
+            # Critical fallback: use snippet if full page scraping was blocked or empty
+            if not clean_text and src.get("snippet") and len(src["snippet"].strip()) > 30:
+                clean_text = src["snippet"]
+
+            if clean_text:
+                scraped_texts.append({
+                    "title": src["title"],
+                    "url": src["url"],
+                    "clean_text": clean_text
+                })
+
+        if not scraped_texts:
+            return [], 0.0, 0.0
 
         web_matches = []
         matched_chunks = 0

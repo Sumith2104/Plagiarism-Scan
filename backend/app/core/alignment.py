@@ -67,6 +67,36 @@ class SequenceAligner:
         lcs_tokens.reverse()
         return lcs_tokens
 
+    def _find_best_window(self, tokens_a: List[str], tokens_b: List[str], window_size: int = 350, step: int = 150) -> Tuple[List[str], int]:
+        """
+        Finds the sub-sequence of tokens_b that best overlaps with tokens_a.
+        Returns (best_tokens_b, offset_in_original_b).
+        """
+        if len(tokens_b) <= window_size:
+            return tokens_b, 0
+
+        # Emphasize salient words (> 2 chars)
+        salient_a = set(w for w in tokens_a if len(w) > 2)
+        if not salient_a:
+            salient_a = set(tokens_a)
+
+        best_overlap = -1
+        best_start = 0
+
+        for start in range(0, len(tokens_b), step):
+            end = min(len(tokens_b), start + window_size)
+            window_set = set(tokens_b[start:end])
+            overlap = len(salient_a.intersection(window_set))
+            if overlap > best_overlap:
+                best_overlap = overlap
+                best_start = start
+            if end >= len(tokens_b):
+                break
+
+        slice_start = max(0, best_start - 30)
+        slice_end = min(len(tokens_b), best_start + window_size + 30)
+        return tokens_b[slice_start:slice_end], slice_start
+
     def align_texts(self, text_a: str, text_b: str) -> Dict[str, Any]:
         """
         Aligns text_a (suspect text) against text_b (candidate source).
@@ -95,13 +125,16 @@ class SequenceAligner:
                 "classification": "no_match"
             }
 
-        # 1. Longest Common Subsequence
-        lcs = self.compute_lcs(tokens_a, tokens_b)
+        # Locate the most relevant window in tokens_b to align against
+        window_b, offset_b = self._find_best_window(tokens_a, tokens_b)
+
+        # 1. Longest Common Subsequence against the focused window
+        lcs = self.compute_lcs(tokens_a, window_b)
         lcs_len = len(lcs)
         lcs_ratio = (lcs_len / len(tokens_a)) if tokens_a else 0.0
 
         # 2. Detailed matching blocks using SequenceMatcher
-        matcher = SequenceMatcher(None, tokens_a, tokens_b)
+        matcher = SequenceMatcher(None, tokens_a, window_b)
         matching_blocks = matcher.get_matching_blocks()
 
         verbatim_blocks = []
@@ -114,8 +147,8 @@ class SequenceAligner:
                 verbatim_blocks.append({
                     "suspect_start": block.a,
                     "suspect_end": block.a + block.size,
-                    "source_start": block.b,
-                    "source_end": block.b + block.size,
+                    "source_start": offset_b + block.b,
+                    "source_end": offset_b + block.b + block.size,
                     "token_count": block.size,
                     "matched_tokens": matched_phrase
                 })

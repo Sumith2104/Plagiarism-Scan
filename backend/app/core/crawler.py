@@ -18,54 +18,72 @@ class AsyncCrawler:
         return cls._instance
 
     async def start(self):
-        """Initialize the browser instance."""
+        """Initialize the browser instance if available."""
         async with self._lock:
             if self._browser is None:
-                logger.info("Starting Playwright Browser...")
-                self.playwright = await async_playwright().start()
-                self._browser = await self.playwright.chromium.launch(headless=True)
-                self._context = await self._browser.new_context(
-                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-                )
-                logger.info("Playwright Browser started.")
+                try:
+                    logger.info("Attempting to start Playwright Browser...")
+                    self.playwright = await async_playwright().start()
+                    self._browser = await self.playwright.chromium.launch(headless=True)
+                    self._context = await self._browser.new_context(
+                        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+                    )
+                    logger.info("Playwright Browser started successfully.")
+                except Exception as e:
+                    logger.warning(f"Playwright Browser could not be started (using HTTP fallback): {e}")
+                    self._browser = None
+                    self._context = None
 
     async def stop(self):
         """Close the browser instance."""
         if self._browser:
-            await self._browser.close()
-            await self.playwright.stop()
+            try:
+                await self._browser.close()
+                await self.playwright.stop()
+            except Exception:
+                pass
             self._browser = None
             self._context = None
             logger.info("Playwright Browser stopped.")
 
-    async def fetch_page_content(self, url: str, timeout: int = 30000) -> str:
+    async def fetch_page_content(self, url: str, timeout: int = 20000) -> str:
         """
-        Fetches page content using a headless browser.
-        Handles dynamic JS content.
+        Fetches page content using a headless browser if available, or httpx fallback.
         """
         if not self._browser:
             await self.start()
 
-        page = await self._context.new_page()
-        content = ""
+        if self._browser and self._context:
+            try:
+                page = await self._context.new_page()
+                try:
+                    await page.goto(url, timeout=timeout, wait_until="domcontentloaded")
+                    content = await page.evaluate("document.body.innerText")
+                    if content and len(content.strip()) > 30:
+                        return content
+                finally:
+                    await page.close()
+            except Exception as e:
+                logger.warning(f"Playwright fetch failed for {url}, trying HTTP fallback: {e}")
+
+        # Graceful HTTP fallback
         try:
-            # Go to URL with timeout
-            # networkidle is safer for dynamic pages but slower. 
-            # If it times out, we catch it.
-            await page.goto(url, timeout=timeout, wait_until="domcontentloaded")
-            
-            # Small wait to ensure JS execution if needed, or just proceed.
-            # await page.wait_for_load_state("networkidle", timeout=5000) 
-            
-            # Extract text content from body
-            content = await page.evaluate("document.body.innerText")
-            
+            import httpx
+            from app.core.scraper.distiller import WebDistiller
+            browser_headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9",
+            }
+            async with httpx.AsyncClient(timeout=10.0, follow_redirects=True, headers=browser_headers, verify=False) as client:
+                resp = await client.get(url)
+                if resp.status_code == 200:
+                    distilled = WebDistiller.distill(resp.text, url=url)
+                    return distilled.get("clean_text", "")
         except Exception as e:
-            logger.warning(f"Failed to fetch {url}: {e}")
-        finally:
-            await page.close()
-            
-        return content
+            logger.warning(f"HTTP fallback scraping failed for {url}: {e}")
+
+        return ""
 
     async def fetch_multiple(self, urls: list) -> Dict[str, str]:
         """
