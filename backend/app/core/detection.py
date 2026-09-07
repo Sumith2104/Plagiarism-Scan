@@ -46,7 +46,7 @@ def direct_duckduckgo_lite_search(query: str, max_results: int = 4) -> List[Dict
     }
     data = {"q": query}
     try:
-        with httpx.Client(timeout=8.0, follow_redirects=True, headers=headers) as client:
+        with httpx.Client(timeout=2.0, follow_redirects=True, headers=headers, http2=False) as client:
             resp = client.post(url, data=data)
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, "html.parser")
@@ -125,7 +125,7 @@ def search_yahoo(query: str, max_results: int = 3) -> List[Dict[str, str]]:
         "Accept-Language": "en-US,en;q=0.9",
     }
     try:
-        with httpx.Client(timeout=6.0, headers=headers, follow_redirects=True) as client:
+        with httpx.Client(timeout=3.5, headers=headers, follow_redirects=True, http2=False) as client:
             resp = client.get(url, params={"p": query})
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, "html.parser")
@@ -158,7 +158,7 @@ def search_bing(query: str, max_results: int = 3) -> List[Dict[str, str]]:
         "Accept-Language": "en-US,en;q=0.9",
     }
     try:
-        with httpx.Client(timeout=6.0, headers=headers, follow_redirects=True) as client:
+        with httpx.Client(timeout=3.5, headers=headers, follow_redirects=True, http2=False) as client:
             resp = client.get(url, params={"q": query})
             if resp.status_code == 200:
                 soup = BeautifulSoup(resp.text, "html.parser")
@@ -198,7 +198,7 @@ def is_result_relevant(query_str: str, title_str: str, snippet_str: str) -> bool
 
 def multi_engine_web_search(query: str, max_results: int = 3) -> List[Dict[str, str]]:
     """
-    Combines Yahoo, Bing, DDG Lite, DDGS, and Wikipedia with intelligent cascading fallbacks.
+    Combines Yahoo, Bing, Wikipedia, and DDG Lite with fast intelligent early exit.
     Prioritizes Yahoo and Bing for speed and resilience against cloud IP throttling.
     """
     results = []
@@ -209,6 +209,10 @@ def multi_engine_web_search(query: str, max_results: int = 3) -> List[Dict[str, 
         if not any(r["url"] == yr["url"] for r in results):
             results.append(yr)
 
+    # Return early if Yahoo found results
+    if len(results) >= 2:
+        return results[:max_results]
+
     # 2. Bing Search (extensive indexing and high-precision technical snippets)
     if len(results) < max_results:
         b_res = search_bing(query, max_results=max_results - len(results))
@@ -216,35 +220,23 @@ def multi_engine_web_search(query: str, max_results: int = 3) -> List[Dict[str, 
             if not any(r["url"] == br["url"] for r in results):
                 results.append(br)
 
-    # 3. Direct DDG Lite fallback
-    if len(results) < max_results:
-        d_res = direct_duckduckgo_lite_search(query, max_results=max_results - len(results))
-        for dr in d_res:
-            if not any(r["url"] == dr["url"] for r in results):
-                results.append(dr)
+    if len(results) >= 1:
+        return results[:max_results]
 
-    # 4. DDGS if available
-    if len(results) < max_results and DDGS is not None:
-        try:
-            with DDGS() as ddgs:
-                for r in list(ddgs.text(query, max_results=max_results - len(results), backend='lite')):
-                    url = r.get("href", r.get("url", ""))
-                    if url and not any(skip in url.lower() for skip in SPAM_DOMAINS):
-                        if not any(x["url"] == url for x in results):
-                            results.append({
-                                "title": r.get("title", "Web Source"),
-                                "url": url,
-                                "snippet": r.get("body", "")[:350]
-                            })
-        except Exception:
-            pass
+    # 3. Wikipedia Action API (ultra-fast JSON endpoint, ~200ms)
+    w_res = wikipedia_search(query, max_results=2)
+    for wr in w_res:
+        if not any(r["url"] == wr["url"] for r in results):
+            results.append(wr)
 
-    # 5. Wikipedia Search if needed
-    if len(results) < max_results:
-        w_res = wikipedia_search(query, max_results=2)
-        for wr in w_res:
-            if not any(r["url"] == wr["url"] for r in results):
-                results.append(wr)
+    if len(results) >= 1:
+        return results[:max_results]
+
+    # 4. Direct DDG Lite fallback only if literally 0 results found above
+    d_res = direct_duckduckgo_lite_search(query, max_results=max_results)
+    for dr in d_res:
+        if not any(r["url"] == dr["url"] for r in results):
+            results.append(dr)
 
     return results[:max_results]
 
@@ -313,29 +305,23 @@ def fetch_wikipedia_extract(url: str) -> Optional[str]:
 
 def fetch_web_page_text(url: str) -> Optional[str]:
     """
-    Fetches and distills web page text using modern browser headers and SSL fallback.
+    Fetches and distills web page text using modern browser headers and fast HTTP/1.1 client.
     """
     browser_headers = {
         "User-Agent": BROWSER_USER_AGENT,
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9",
-        "Sec-Ch-Ua": '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
-        "Sec-Ch-Ua-Mobile": "?0",
-        "Sec-Ch-Ua-Platform": '"Windows"',
     }
-    for verify in [True, False]:
-        try:
-            with httpx.Client(follow_redirects=True, timeout=10.0, headers=browser_headers, verify=verify) as client:
-                resp = client.get(url)
-                if resp.status_code == 200:
-                    distilled = WebDistiller.distill(resp.text, url=url)
-                    clean = distilled.get("clean_text", "")
-                    if clean and len(clean.strip()) > 50:
-                        return clean
-            break
-        except Exception:
-            if not verify:
-                break
+    try:
+        with httpx.Client(follow_redirects=True, timeout=3.5, headers=browser_headers, verify=False, http2=False) as client:
+            resp = client.get(url)
+            if resp.status_code == 200:
+                distilled = WebDistiller.distill(resp.text, url=url)
+                clean = distilled.get("clean_text", "")
+                if clean and len(clean.strip()) > 50:
+                    return clean
+    except Exception:
+        pass
     return None
 
 HALLMARK_PATTERNS = [
@@ -609,7 +595,7 @@ class DetectionEngine:
             web_score = 0.0
             verbatim_score = 0.0
             try:
-                web_matches, web_score, verbatim_score = self._web_plagiarism_check(doc.extracted_text, chunks)
+                web_matches, web_score, verbatim_score = self._web_plagiarism_check(doc.extracted_text, chunks, scan_id=scan_id)
             except Exception as e:
                 print(f"Web plagiarism check skipped: {e}")
 
@@ -715,19 +701,21 @@ class DetectionEngine:
             import traceback
             traceback.print_exc()
 
-    def _web_plagiarism_check(self, full_text: str, chunks: List[str]):
+    def _web_plagiarism_check(self, full_text: str, chunks: List[str], scan_id: Optional[int] = None):
         """
         True Multi-Source Detection Engine:
         - Segments document into all paragraphs and sentences.
         - Proportionally samples sections to guarantee coverage from start, middle, and end.
         - Generates multi-phrase queries (lead n-gram, salient middle n-gram, late n-gram, sentence 2).
-        - Queries Yahoo, Bing, DDGS, DDG Lite, and Wikipedia with bot-block resilience.
-        - Employs Round-Robin Candidate Allocation across all sections (preventing early sections from starving later sections).
-        - Deep-scrapes candidate web pages with snippet fallback.
+        - Queries Yahoo, Bing, and Wikipedia with bot-block resilience.
+        - Employs Round-Robin Candidate Allocation across all sections.
+        - Deep-scrapes candidate web pages in parallel using ThreadPoolExecutor.
         - Forensically aligns every paragraph and sentence against all scraped candidate sources.
         - Preserves all verified distinct web matches with high similarity scores.
         """
         import time
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
         cleaned_text = re.sub(r'\[\d+\]|\\\[\d+|\d+\\\[\d+|\[.*?\]', '', full_text).strip()
         if not cleaned_text:
             return [], 0.0, 0.0
@@ -751,7 +739,11 @@ class DetectionEngine:
         section_sources: Dict[int, List[Dict[str, str]]] = {}
         seen_search_urls = set()
 
-        for sec_idx in sampled_indices:
+        for sec_pos, sec_idx in enumerate(sampled_indices):
+            if scan_id and sec_pos % 2 == 0:
+                pct = 65 + int((sec_pos / max(len(sampled_indices), 1)) * 10)
+                self._update_progress(scan_id, pct, f"Checking section {sec_pos+1}/{len(sampled_indices)} against search engines...")
+
             p = raw_paragraphs[sec_idx]
             p_norm = re.sub(r'([a-z])([A-Z])', r'\1 \2', p)
             p_norm = re.sub(r'([A-Z]{2,})([a-z])', r'\1 \2', p_norm)
@@ -786,12 +778,11 @@ class DetectionEngine:
                         if is_result_relevant(q, r["title"], r.get("snippet", "")):
                             seen_search_urls.add(u)
                             section_sources[sec_idx].append(r)
-                time.sleep(0.25)
-                # Stop after at least 2 queries if we have at least 2 verified relevant sources
-                if q_num >= 1 and len(section_sources[sec_idx]) >= 2:
+                # Stop if we already have verified relevant sources for this section
+                if len(section_sources[sec_idx]) >= 2:
                     break
 
-        # 3. Round-Robin Candidate Allocation across all document sections (up to 20 total)
+        # 3. Round-Robin Candidate Allocation across all document sections (up to 12 total)
         candidate_sources = []
         seen_cand_urls = set()
         for r in range(2):
@@ -803,17 +794,19 @@ class DetectionEngine:
                     if u not in seen_cand_urls:
                         seen_cand_urls.add(u)
                         candidate_sources.append(cand)
-                        if len(candidate_sources) >= 20:
+                        if len(candidate_sources) >= 12:
                             break
-            if len(candidate_sources) >= 20:
+            if len(candidate_sources) >= 12:
                 break
 
         if not candidate_sources:
             return [], 0.0, 0.0
 
-        # 4. Scrape or extract text from candidate sources
-        scraped_texts = []
-        for src in candidate_sources:
+        # 4. Scrape or extract text from candidate sources in parallel
+        if scan_id:
+            self._update_progress(scan_id, 76, f"Extracting proof from {len(candidate_sources)} web sources in parallel...")
+
+        def _scrape_candidate(src):
             url = src["url"]
             clean_text = None
             if "wikipedia.org/wiki/" in url:
@@ -825,15 +818,30 @@ class DetectionEngine:
                 clean_text = src["snippet"]
 
             if clean_text:
-                scraped_texts.append({
+                return {
                     "title": src["title"],
                     "url": src["url"],
                     "clean_text": clean_text,
                     "snippet": src.get("snippet", "")
-                })
+                }
+            return None
+
+        scraped_texts = []
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            future_to_src = {executor.submit(_scrape_candidate, s): s for s in candidate_sources}
+            for fut in as_completed(future_to_src):
+                try:
+                    res = fut.result()
+                    if res:
+                        scraped_texts.append(res)
+                except Exception:
+                    pass
 
         if not scraped_texts:
             return [], 0.0, 0.0
+
+        if scan_id:
+            self._update_progress(scan_id, 82, f"Aligning content across {len(scraped_texts)} candidate web sources...")
 
         # 5. Multi-Source Alignment: Check each paragraph against ALL candidate sources!
         # Collect all verified distinct websites!
