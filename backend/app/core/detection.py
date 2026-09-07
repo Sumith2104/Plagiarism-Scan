@@ -86,6 +86,170 @@ def direct_duckduckgo_lite_search(query: str, max_results: int = 4) -> List[Dict
     return results
 
 
+STOP_WORDS = {
+    "this", "that", "these", "those", "with", "from", "into", "during",
+    "including", "until", "against", "among", "throughout", "despite",
+    "towards", "upon", "concerning", "about", "above", "below", "to",
+    "and", "for", "the", "a", "an", "in", "on", "at", "by", "is", "are",
+    "was", "were", "be", "been", "being", "have", "has", "had", "having",
+    "do", "does", "did", "doing", "would", "should", "could", "ought",
+    "also", "each", "every", "all", "both", "half", "some", "any",
+    "most", "none", "such", "other", "another", "type", "types", "many",
+    "much", "more", "less", "least", "well", "back", "come", "work",
+    "works", "built", "shows", "show", "used", "uses", "using", "use",
+    "make", "makes", "making", "made", "take", "takes", "taking", "took",
+    "good", "better", "best", "example", "examples", "run", "runs", "running",
+    "step", "steps", "guide", "guides", "tutorial", "tutorials", "learn",
+    "learning", "online", "free", "help", "click", "here", "read", "view",
+    "play", "games", "game", "video", "dictionary", "meaning", "definition"
+}
+
+SPAM_DOMAINS = [
+    "bokep", "porn", "xxx", "indo18", "quinbokep", "casino", "bet", "gambl",
+    "dating", "adult", "coolmathgames", "poki.com", "typing.com", "typingtest.com",
+    "dictionary.cambridge", "merriam-webster.com", "thesaurus.com", "cricinfo.com",
+    "cricbuzz.com", "indiarunning.com"
+]
+
+
+def search_yahoo(query: str, max_results: int = 3) -> List[Dict[str, str]]:
+    """
+    Yahoo Search integration: decodes /RU= encoded redirects to retrieve exact destination URLs.
+    High reliability on cloud IPs.
+    """
+    url = "https://search.yahoo.com/search"
+    results = []
+    headers = {
+        "User-Agent": BROWSER_USER_AGENT,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+    try:
+        with httpx.Client(timeout=6.0, headers=headers, follow_redirects=True) as client:
+            resp = client.get(url, params={"p": query})
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                for a in soup.find_all("a"):
+                    href = a.get("href", "")
+                    if "/RU=" in href:
+                        target = urllib.parse.unquote(href.split("/RU=")[1].split("/RK=")[0])
+                        if target.startswith("http") and not any(skip in target.lower() for skip in ["yahoo.com", "yahoosandbox.com"] + SPAM_DOMAINS):
+                            title = a.get_text(strip=True)
+                            if title and not any(r["url"] == target for r in results):
+                                results.append({"title": title, "url": target, "snippet": ""})
+                                if len(results) >= max_results:
+                                    break
+    except Exception as e:
+        logger.warning(f"Yahoo search error: {e}")
+    return results
+
+
+def search_bing(query: str, max_results: int = 3) -> List[Dict[str, str]]:
+    """
+    Bing Search integration: decodes u=a1 base64 redirect URLs.
+    Extremely accurate on technical articles and documentation.
+    """
+    import base64
+    url = "https://www.bing.com/search"
+    results = []
+    headers = {
+        "User-Agent": BROWSER_USER_AGENT,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+    try:
+        with httpx.Client(timeout=6.0, headers=headers, follow_redirects=True) as client:
+            resp = client.get(url, params={"q": query})
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                for li in soup.find_all("li", class_="b_algo")[:max_results]:
+                    h2 = li.find("h2")
+                    a = h2.find("a") if h2 else None
+                    snippet_el = li.find("p") or li.find("div", class_="b_caption")
+                    if a and a.get("href"):
+                        href = a["href"]
+                        if "u=a1" in href:
+                            enc = href.split("u=a1")[-1].split("&")[0]
+                            try:
+                                href = base64.urlsafe_b64decode(enc + "==").decode("utf-8", errors="ignore")
+                            except Exception:
+                                pass
+                        title = a.get_text(strip=True)
+                        snippet = snippet_el.get_text(strip=True) if snippet_el else ""
+                        if href and href.startswith("http") and not any(skip in href.lower() for skip in ["bing.com"] + SPAM_DOMAINS):
+                            results.append({"title": title or "Web Source", "url": href, "snippet": snippet[:350]})
+    except Exception as e:
+        logger.warning(f"Bing search error: {e}")
+    return results
+
+
+def is_result_relevant(query_str: str, title_str: str, snippet_str: str) -> bool:
+    """
+    Validates that search result contains at least one non-stop word from the query,
+    preventing dictionary spam or unrelated query hijacking.
+    """
+    q_w = set(w.lower() for w in re.sub(r'[^a-zA-Z0-9\s]', ' ', query_str).split() if len(w) > 3 and w.lower() not in STOP_WORDS)
+    if not q_w:
+        return True
+    c_text = (title_str + " " + snippet_str).lower()
+    c_w = set(w for w in re.sub(r'[^a-zA-Z0-9\s]', ' ', c_text).split() if len(w) > 3 and w not in STOP_WORDS)
+    return len(q_w & c_w) >= 1
+
+
+def multi_engine_web_search(query: str, max_results: int = 3) -> List[Dict[str, str]]:
+    """
+    Combines Yahoo, Bing, DDGS / DDG Lite, and Wikipedia with intelligent cascading fallbacks.
+    """
+    results = []
+    # 1. DDGS if available
+    if DDGS is not None:
+        for backend in ['lite', 'html']:
+            try:
+                with DDGS() as ddgs:
+                    for r in list(ddgs.text(query, max_results=max_results, backend=backend)):
+                        url = r.get("href", r.get("url", ""))
+                        if url and not any(skip in url.lower() for skip in SPAM_DOMAINS):
+                            results.append({
+                                "title": r.get("title", "Web Source"),
+                                "url": url,
+                                "snippet": r.get("body", "")[:350]
+                            })
+                if results:
+                    break
+            except Exception:
+                pass
+
+    # 2. Yahoo Search
+    if len(results) < max_results:
+        y_res = search_yahoo(query, max_results=max_results - len(results))
+        for yr in y_res:
+            if not any(r["url"] == yr["url"] for r in results):
+                results.append(yr)
+
+    # 3. Bing Search
+    if len(results) < max_results:
+        b_res = search_bing(query, max_results=max_results - len(results))
+        for br in b_res:
+            if not any(r["url"] == br["url"] for r in results):
+                results.append(br)
+
+    # 4. Direct DDG Lite fallback
+    if len(results) < max_results:
+        d_res = direct_duckduckgo_lite_search(query, max_results=max_results - len(results))
+        for dr in d_res:
+            if not any(r["url"] == dr["url"] for r in results):
+                results.append(dr)
+
+    # 5. Wikipedia Search if needed
+    if len(results) < max_results:
+        w_res = wikipedia_search(query, max_results=2)
+        for wr in w_res:
+            if not any(r["url"] == wr["url"] for r in results):
+                results.append(wr)
+
+    return results[:max_results]
+
+
 def wikipedia_search(query: str, max_results: int = 3) -> List[Dict[str, str]]:
     """
     Search Wikipedia using their official Wikimedia Action API.
@@ -250,7 +414,7 @@ def generate_line_analysis(
             s_alnum = re.sub(r'[^a-zA-Z0-9\s]', ' ', s_lower)
             s_words_set = set(w for w in s_alnum.split() if len(w) > 3)
 
-            # 1. Check Web Match (Verified external URLs)
+            # 1. Check Web Match (Verified external URLs across all detected sources)
             matched_web = None
             if word_count >= 3 and len(s_words_set) >= 2:
                 for wm in (web_matches + [m for m in evidence_matches if isinstance(m, dict) and not (m.get("source_url") or "").startswith("internal://")]):
@@ -260,11 +424,21 @@ def generate_line_analysis(
                         continue
                     wm_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', wm_sentence)
                     wm_words = set(w for w in wm_clean.split() if len(w) > 3)
+
+                    overlap = 0.0
                     if wm_words and s_words_set:
                         overlap = len(s_words_set & wm_words) / len(s_words_set)
-                        if overlap >= 0.50 or (len(s_clean) >= 20 and (s_lower in wm_sentence or wm_sentence in s_lower)):
-                            matched_web = wm
-                            break
+
+                    # Also check if sentence belongs to any paragraph matched to this source
+                    matched_list = wm.get("matched_sentences") or []
+                    in_matched_list = any(s_lower in m.lower() or (len(s_words_set) >= 3 and len(s_words_set & set(w for w in re.sub(r'[^a-zA-Z0-9\s]', ' ', m.lower()).split() if len(w) > 3)) / len(s_words_set) >= 0.45) for m in matched_list)
+
+                    wm_snippet = (wm.get("snippet") or "").lower()
+                    in_snippet = len(s_clean) >= 20 and (s_lower in wm_snippet or wm_snippet in s_lower)
+
+                    if overlap >= 0.45 or in_matched_list or in_snippet or (len(s_clean) >= 20 and (s_lower in wm_sentence or wm_sentence in s_lower)):
+                        matched_web = wm
+                        break
 
             # 2. Check ML / Internal Vector Match
             matched_internal = None
@@ -492,7 +666,7 @@ class DetectionEngine:
                 "overall_score": overall_score,
                 "verbatim_score": round(verbatim_score, 2),
                 "matches": all_matches,
-                "web_matches": web_matches[:10],
+                "web_matches": web_matches[:15],
                 "ai_detection": ai_analysis,
                 "readability": readability_analysis,
                 "line_analysis": db_lines
@@ -544,104 +718,108 @@ class DetectionEngine:
 
     def _web_plagiarism_check(self, full_text: str, chunks: List[str]):
         """
-        Multi-engine web search (DDGS Lite, DDGS HTML, direct DDG Lite fallback, Wikipedia API)
-        with paragraph-level query sampling, deep scraping, and multi-source sequence alignment.
-        Returns (web_matches, web_score, verbatim_score).
+        True Multi-Source Detection Engine:
+        - Segments document into all paragraphs and sentences.
+        - Proportionally samples sections to guarantee coverage from start, middle, and end.
+        - Generates multi-phrase queries (lead n-gram, salient middle n-gram, late n-gram, sentence 2).
+        - Queries Yahoo, Bing, DDGS, DDG Lite, and Wikipedia with bot-block resilience.
+        - Employs Round-Robin Candidate Allocation across all sections (preventing early sections from starving later sections).
+        - Deep-scrapes candidate web pages with snippet fallback.
+        - Forensically aligns every paragraph and sentence against all scraped candidate sources.
+        - Preserves all verified distinct web matches with high similarity scores.
         """
+        import time
         cleaned_text = re.sub(r'\[\d+\]|\\\[\d+|\d+\\\[\d+|\[.*?\]', '', full_text).strip()
         if not cleaned_text:
             return [], 0.0, 0.0
 
-        # 1. Segment text into paragraphs and individual sentences for multi-source detection
+        # 1. Segment text into paragraphs and individual sentences
         raw_paragraphs = [p.strip() for p in cleaned_text.split('\n') if len(p.strip().split()) >= 4]
         if not raw_paragraphs:
             raw_paragraphs = [cleaned_text]
 
-        # Also collect distinct sentences
         raw_sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', cleaned_text) if len(s.strip().split()) >= 4]
 
-        # 2. Extract search queries ensuring EVERY paragraph has targeted representation
-        search_queries = []
-        for p in raw_paragraphs:
+        # 2. Select sections to sample across the document (guarantees coverage from start, middle, end)
+        num_paras = len(raw_paragraphs)
+        if num_paras <= 10:
+            sampled_indices = list(range(num_paras))
+        else:
+            # Proportionally sample 10 sections evenly distributed
+            step_pcts = [0.0, 0.12, 0.25, 0.38, 0.50, 0.62, 0.75, 0.85, 0.93, 1.0]
+            sampled_indices = sorted(list(set(min(num_paras - 1, int(num_paras * pct)) for pct in step_pcts)))
+
+        section_sources: Dict[int, List[Dict[str, str]]] = {}
+        seen_search_urls = set()
+
+        for sec_idx in sampled_indices:
+            p = raw_paragraphs[sec_idx]
             p_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', p)
             words = p_clean.split()
-            if len(words) >= 5:
-                # Query 1: Start of paragraph (8-10 words)
-                search_queries.append(" ".join(words[:10]))
-                # Query 2: Middle/distinctive part if paragraph is longer
-                if len(words) >= 16:
-                    search_queries.append(" ".join(words[6:16]))
+            if len(words) < 5:
+                continue
 
-        # Also sample from sentences if few paragraphs exist
-        if len(search_queries) < 4:
-            for s in raw_sentences:
-                s_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', s)
-                words = s_clean.split()
-                if len(words) >= 5:
-                    q = " ".join(words[:10])
-                    if q not in search_queries:
-                        search_queries.append(q)
+            queries = []
+            # Query 1: Lead 9 words
+            queries.append(" ".join(words[:9]))
+            # Query 2: Salient/middle 9 words (bypasses starting typos or generic introductory clauses)
+            if len(words) >= 15:
+                queries.append(" ".join(words[5:14]))
+            # Query 3: Late 9 words if paragraph is long
+            if len(words) >= 22:
+                queries.append(" ".join(words[12:21]))
+            # Query 4: 2nd sentence lead if multi-sentence
+            sents = [s.strip() for s in re.split(r'(?<=[.!?])\s+', p) if len(s.strip().split()) >= 4]
+            if len(sents) > 1:
+                s2_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', sents[1])
+                s2_w = s2_clean.split()
+                if len(s2_w) >= 5:
+                    queries.append(" ".join(s2_w[:9]))
 
-        # Cap search queries to 8 to stay fast while covering all sections
-        if len(search_queries) > 8:
-            step = len(search_queries) // 8
-            search_queries = [search_queries[i * step] for i in range(8)]
+            section_sources[sec_idx] = []
+            for q_num, q in enumerate(queries):
+                res = multi_engine_web_search(q, max_results=3)
+                for r in res:
+                    u = r["url"].lower()
+                    if u not in seen_search_urls:
+                        if is_result_relevant(q, r["title"], r.get("snippet", "")):
+                            seen_search_urls.add(u)
+                            section_sources[sec_idx].append(r)
+                time.sleep(0.25)
+                # Stop after at least 2 queries if we have at least 2 verified relevant sources
+                if q_num >= 1 and len(section_sources[sec_idx]) >= 2:
+                    break
 
-        found_sources = []
-        seen_urls = set()
-
-        for q in search_queries:
-            query_sources = []
-
-            # 1. DDGS with backend='lite' then 'html'
-            if DDGS is not None:
-                for backend in ['lite', 'html']:
-                    try:
-                        with DDGS() as ddgs:
-                            for r in list(ddgs.text(q, max_results=3, backend=backend)):
-                                url = r.get("href", r.get("url", ""))
-                                if url and url not in seen_urls:
-                                    seen_urls.add(url)
-                                    query_sources.append({
-                                        "title": r.get("title", "Web Source"),
-                                        "url": url,
-                                        "snippet": r.get("body", "")[:350]
-                                    })
-                        if query_sources:
+        # 3. Round-Robin Candidate Allocation across all document sections (up to 20 total)
+        candidate_sources = []
+        seen_cand_urls = set()
+        for r in range(2):
+            for sec_idx in sorted(section_sources.keys()):
+                sources_for_sec = section_sources[sec_idx]
+                if r < len(sources_for_sec):
+                    cand = sources_for_sec[r]
+                    u = cand["url"]
+                    if u not in seen_cand_urls:
+                        seen_cand_urls.add(u)
+                        candidate_sources.append(cand)
+                        if len(candidate_sources) >= 20:
                             break
-                    except Exception as e:
-                        logger.warning(f"DDGS backend '{backend}' failed for '{q}': {e}")
+            if len(candidate_sources) >= 20:
+                break
 
-            # 2. Direct DDG Lite fallback if DDGS returned nothing
-            if not query_sources:
-                direct_results = direct_duckduckgo_lite_search(q, max_results=3)
-                for r in direct_results:
-                    if r["url"] not in seen_urls:
-                        seen_urls.add(r["url"])
-                        query_sources.append(r)
-
-            # 3. Wikipedia API Search
-            wiki_results = wikipedia_search(q, max_results=2)
-            for r in wiki_results:
-                if r["url"] not in seen_urls:
-                    seen_urls.add(r["url"])
-                    query_sources.append(r)
-
-            found_sources.extend(query_sources)
-
-        if not found_sources:
+        if not candidate_sources:
             return [], 0.0, 0.0
 
-        # 3. Scrape or extract text from top sources (up to 10 sources across different domains)
+        # 4. Scrape or extract text from candidate sources
         scraped_texts = []
-        for src in found_sources[:10]:
+        for src in candidate_sources:
             url = src["url"]
             clean_text = None
             if "wikipedia.org/wiki/" in url:
                 clean_text = fetch_wikipedia_extract(url)
             if not clean_text:
                 clean_text = fetch_web_page_text(url)
-            # Critical fallback: use snippet if full page scraping was blocked or empty
+            # Fallback to snippet if page scraping was blocked or empty
             if not clean_text and src.get("snippet") and len(src["snippet"].strip()) > 30:
                 clean_text = src["snippet"]
 
@@ -649,14 +827,15 @@ class DetectionEngine:
                 scraped_texts.append({
                     "title": src["title"],
                     "url": src["url"],
-                    "clean_text": clean_text
+                    "clean_text": clean_text,
+                    "snippet": src.get("snippet", "")
                 })
 
         if not scraped_texts:
             return [], 0.0, 0.0
 
-        # 4. Multi-Source Alignment: Check each paragraph against ALL candidate sources!
-        # Do NOT break on the first source! A document can contain multiple sources!
+        # 5. Multi-Source Alignment: Check each paragraph against ALL candidate sources!
+        # Collect all verified distinct websites!
         matched_sources_map = {}
         matched_paragraphs_count = 0
         verbatim_paragraphs_count = 0
@@ -684,29 +863,37 @@ class DetectionEngine:
                 source_snippet = ""
                 if best_align_for_p.get("verbatim_blocks"):
                     source_snippet = best_align_for_p["verbatim_blocks"][0].get("matched_tokens", "")[:250]
+                elif best_src_for_p.get("snippet"):
+                    source_snippet = best_src_for_p["snippet"][:250]
                 else:
                     source_snippet = best_src_for_p["clean_text"][:250]
 
                 url = best_src_for_p["url"]
-                if url not in matched_sources_map or best_sim_for_p > matched_sources_map[url]["similarity_score"]:
+                if url not in matched_sources_map:
                     matched_sources_map[url] = {
                         "sentence": p,
                         "source_title": best_src_for_p["title"],
                         "source_url": url,
                         "snippet": source_snippet,
                         "similarity_score": best_sim_for_p,
-                        "match_type": cls
+                        "match_type": cls,
+                        "matched_sentences": [p]
                     }
+                else:
+                    matched_sources_map[url]["matched_sentences"].append(p)
+                    if best_sim_for_p > matched_sources_map[url]["similarity_score"]:
+                        matched_sources_map[url]["similarity_score"] = best_sim_for_p
+                        matched_sources_map[url]["sentence"] = p
+                        matched_sources_map[url]["snippet"] = source_snippet
+                        matched_sources_map[url]["match_type"] = cls
 
-        # Also check coarse chunks if any chunk matched a source not captured at paragraph level
-        for chunk in chunks:
+        # Also check distinct sentences for any sources not captured at paragraph level
+        for s in raw_sentences:
             for st in scraped_texts:
                 url = st["url"]
-                if url in matched_sources_map:
-                    continue
-                alignment = self.aligner.align_texts(chunk, st["clean_text"])
+                alignment = self.aligner.align_texts(s, st["clean_text"])
                 sim = alignment.get("similarity_score", 0.0)
-                if sim >= 28.0:
+                if sim >= 35.0:
                     cls = alignment.get("classification", "web_match")
                     source_snippet = ""
                     if alignment.get("verbatim_blocks"):
@@ -714,14 +901,18 @@ class DetectionEngine:
                     else:
                         source_snippet = st["clean_text"][:250]
 
-                    matched_sources_map[url] = {
-                        "sentence": chunk,
-                        "source_title": st["title"],
-                        "source_url": url,
-                        "snippet": source_snippet,
-                        "similarity_score": sim,
-                        "match_type": cls
-                    }
+                    if url not in matched_sources_map:
+                        matched_sources_map[url] = {
+                            "sentence": s,
+                            "source_title": st["title"],
+                            "source_url": url,
+                            "snippet": source_snippet,
+                            "similarity_score": sim,
+                            "match_type": cls,
+                            "matched_sentences": [s]
+                        }
+                    elif s not in matched_sources_map[url].get("matched_sentences", []):
+                        matched_sources_map[url].setdefault("matched_sentences", []).append(s)
 
         web_matches = sorted(list(matched_sources_map.values()), key=lambda x: x["similarity_score"], reverse=True)
         web_score = round(min(100.0, (matched_paragraphs_count / total_eval_units) * 100), 2)
