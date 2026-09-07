@@ -44,13 +44,67 @@ class FluxbaseQuery:
         self.order_by_desc = False
 
     def filter(self, criteria):
-        col_name = criteria.left.name
-        val = criteria.right.value if hasattr(criteria.right, "value") else criteria.right
-        
-        # Obfuscate criteria value if it contains path/URL characters to match DB representation
-        encoded_val = encode_value(val)
-        self.filters.append((col_name, encoded_val))
+        clause = self._parse_criteria(criteria)
+        if clause:
+            self.filters.append(clause)
         return self
+
+    def _parse_criteria(self, criteria) -> str:
+        left = criteria.left
+        if hasattr(left, "clauses"):
+            fn_name = getattr(left, "name", "").upper()
+            clauses = list(left.clauses)
+            if clauses:
+                first_clause = clauses[0]
+                col_expr = f"{fn_name}({getattr(first_clause, 'name', str(first_clause))})"
+            else:
+                col_expr = str(left)
+        elif hasattr(left, "name"):
+            col_expr = left.name
+        else:
+            col_expr = str(left)
+
+        op_name = getattr(criteria.operator, "__name__", "")
+
+        if op_name == "is_":
+            return f"{col_expr} IS NULL"
+        if op_name == "is_not":
+            return f"{col_expr} IS NOT NULL"
+
+        val = criteria.right.value if hasattr(criteria.right, "value") else criteria.right
+
+        if op_name == "in_op":
+            if isinstance(val, (list, tuple, set)):
+                if not val:
+                    return "1=0"
+                items = []
+                for item in val:
+                    item_enc = encode_value(item)
+                    if isinstance(item_enc, str):
+                        clean_str = item_enc.replace("'", "''")
+                        items.append(f"'{clean_str}'")
+                    else:
+                        items.append(str(item_enc))
+                return f"{col_expr} IN ({', '.join(items)})"
+            return "1=0"
+
+        encoded_val = encode_value(val)
+        if encoded_val is None:
+            if op_name == "ne":
+                return f"{col_expr} IS NOT NULL"
+            return f"{col_expr} IS NULL"
+
+        if isinstance(encoded_val, str):
+            clean_str = encoded_val.replace("'", "''")
+            val_str = f"'{clean_str}'"
+        elif isinstance(encoded_val, bool):
+            val_str = "1" if encoded_val else "0"
+        else:
+            val_str = str(encoded_val)
+
+        if op_name == "ne":
+            return f"{col_expr} != {val_str}"
+        return f"{col_expr} = {val_str}"
 
     def order_by(self, order_clause):
         if hasattr(order_clause, "element"):
@@ -72,18 +126,7 @@ class FluxbaseQuery:
         return [self._map_row_to_model(r) for r in rows]
 
     def delete(self):
-        where_parts = []
-        for col, val in self.filters:
-            if isinstance(val, str):
-                val_escaped = val.replace("'", "''")
-                formatted_val = f"'{val_escaped}'"
-            elif val is None:
-                formatted_val = "NULL"
-            else:
-                formatted_val = str(val)
-            where_parts.append(f"{col} = {formatted_val}")
-        
-        where_str = f" WHERE {' AND '.join(where_parts)}" if where_parts else ""
+        where_str = f" WHERE {' AND '.join(self.filters)}" if self.filters else ""
         sql = f"DELETE FROM {self.table_name}{where_str};"
         from app.db.fluxbase import get_fluxbase_client
         client = get_fluxbase_client()
@@ -100,42 +143,21 @@ class FluxbaseQuery:
                 formatted_val = f"'{val_escaped}'"
             elif encoded_val is None:
                 formatted_val = "NULL"
+            elif isinstance(encoded_val, bool):
+                formatted_val = "1" if encoded_val else "0"
             else:
                 formatted_val = str(encoded_val)
             set_clauses.append(f"{col_name} = {formatted_val}")
             
         set_str = ", ".join(set_clauses)
-        
-        where_parts = []
-        for col, val in self.filters:
-            if isinstance(val, str):
-                val_escaped = val.replace("'", "''")
-                formatted_val = f"'{val_escaped}'"
-            elif val is None:
-                formatted_val = "NULL"
-            else:
-                formatted_val = str(val)
-            where_parts.append(f"{col} = {formatted_val}")
-            
-        where_str = f" WHERE {' AND '.join(where_parts)}" if where_parts else ""
+        where_str = f" WHERE {' AND '.join(self.filters)}" if self.filters else ""
         sql = f"UPDATE {self.table_name} SET {set_str}{where_str};"
         from app.db.fluxbase import get_fluxbase_client
         client = get_fluxbase_client()
         client.execute(sql)
 
     def _execute_select(self, limit=None):
-        where_parts = []
-        for col, val in self.filters:
-            if isinstance(val, str):
-                val_escaped = val.replace("'", "''")
-                formatted_val = f"'{val_escaped}'"
-            elif val is None:
-                formatted_val = "NULL"
-            else:
-                formatted_val = str(val)
-            where_parts.append(f"{col} = {formatted_val}")
-
-        where_str = f" WHERE {' AND '.join(where_parts)}" if where_parts else ""
+        where_str = f" WHERE {' AND '.join(self.filters)}" if self.filters else ""
         
         order_str = ""
         if self.order_by_col:
@@ -376,9 +398,18 @@ class FluxbaseSession:
         client.execute(sql)
         
         try:
-            res = client.execute(f"SELECT MAX(id) as last_id FROM {table_name};")
-            if res and res[0].get("last_id") is not None:
-                obj.id = int(res[0]["last_id"])
+            if table_name == "users" and getattr(obj, "email", None):
+                email_escaped = str(obj.email).replace("'", "''")
+                res = client.execute(f"SELECT id FROM users WHERE email = '{email_escaped}';")
+                if res and res[0].get("id") is not None:
+                    obj.id = int(res[0]["id"])
+
+            if not getattr(obj, "id", None):
+                res = client.execute(f"SELECT MAX(id) as last_id FROM {table_name};")
+                if res and res[0].get("last_id") is not None:
+                    obj.id = int(res[0]["last_id"])
+
+            if getattr(obj, "id", None):
                 snapshot = {}
                 for key in obj.__mapper__.columns.keys():
                     snapshot[key] = getattr(obj, key, None)

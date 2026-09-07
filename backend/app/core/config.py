@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # --- Fluxbase Database (primary) ---
-    FLUXBASE_URL: str = "https://fluxbase.vercel.app/api/execute-sql"
+    FLUXBASE_URL: str = "https://www.fluxbasedb.me/api/execute-sql"
     FLUXBASE_API_KEY: Optional[str] = None
     FLUXBASE_PROJECT_ID: Optional[str] = None
 
