@@ -1,0 +1,42 @@
+# Stage 1: Build React Frontend
+FROM node:20-alpine AS frontend-builder
+WORKDIR /app/frontend
+
+COPY frontend/package*.json ./
+RUN npm install
+
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2: Python Backend + Built React Assets
+FROM python:3.10-slim
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Install essential system dependencies (including tesseract for OCR support)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    tesseract-ocr \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install python dependencies
+COPY backend/requirements.txt ./backend/
+RUN pip install --no-cache-dir -r ./backend/requirements.txt
+
+# Copy backend code
+COPY backend ./backend
+
+# Copy built frontend dist into location expected by FastAPI
+COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+
+# Expose unified port
+EXPOSE 8000
+
+WORKDIR /app/backend
+
+# Run unified server on 0.0.0.0
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

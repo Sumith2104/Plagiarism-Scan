@@ -21,8 +21,9 @@ beautifulsoup4==4.12.2
 pytesseract==0.3.10
 Pillow>=10.1.0
 # python-magic==0.4.27  # Requires native libmagic DLL on Windows - replaced with mimetypes
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
 transformers
-torch --index-url https://download.pytorch.org/whl/cpu
 pytest==7.4.3
 datasketch==1.6.4
 reportlab==4.0.7
