@@ -198,47 +198,46 @@ def is_result_relevant(query_str: str, title_str: str, snippet_str: str) -> bool
 
 def multi_engine_web_search(query: str, max_results: int = 3) -> List[Dict[str, str]]:
     """
-    Combines Yahoo, Bing, DDGS / DDG Lite, and Wikipedia with intelligent cascading fallbacks.
+    Combines Yahoo, Bing, DDG Lite, DDGS, and Wikipedia with intelligent cascading fallbacks.
+    Prioritizes Yahoo and Bing for speed and resilience against cloud IP throttling.
     """
     results = []
-    # 1. DDGS if available
-    if DDGS is not None:
-        for backend in ['lite', 'html']:
-            try:
-                with DDGS() as ddgs:
-                    for r in list(ddgs.text(query, max_results=max_results, backend=backend)):
-                        url = r.get("href", r.get("url", ""))
-                        if url and not any(skip in url.lower() for skip in SPAM_DOMAINS):
-                            results.append({
-                                "title": r.get("title", "Web Source"),
-                                "url": url,
-                                "snippet": r.get("body", "")[:350]
-                            })
-                if results:
-                    break
-            except Exception:
-                pass
 
-    # 2. Yahoo Search
-    if len(results) < max_results:
-        y_res = search_yahoo(query, max_results=max_results - len(results))
-        for yr in y_res:
-            if not any(r["url"] == yr["url"] for r in results):
-                results.append(yr)
+    # 1. Yahoo Search (unthrottled, fast, high accuracy for documentation)
+    y_res = search_yahoo(query, max_results=max_results)
+    for yr in y_res:
+        if not any(r["url"] == yr["url"] for r in results):
+            results.append(yr)
 
-    # 3. Bing Search
+    # 2. Bing Search (extensive indexing and high-precision technical snippets)
     if len(results) < max_results:
         b_res = search_bing(query, max_results=max_results - len(results))
         for br in b_res:
             if not any(r["url"] == br["url"] for r in results):
                 results.append(br)
 
-    # 4. Direct DDG Lite fallback
+    # 3. Direct DDG Lite fallback
     if len(results) < max_results:
         d_res = direct_duckduckgo_lite_search(query, max_results=max_results - len(results))
         for dr in d_res:
             if not any(r["url"] == dr["url"] for r in results):
                 results.append(dr)
+
+    # 4. DDGS if available
+    if len(results) < max_results and DDGS is not None:
+        try:
+            with DDGS() as ddgs:
+                for r in list(ddgs.text(query, max_results=max_results - len(results), backend='lite')):
+                    url = r.get("href", r.get("url", ""))
+                    if url and not any(skip in url.lower() for skip in SPAM_DOMAINS):
+                        if not any(x["url"] == url for x in results):
+                            results.append({
+                                "title": r.get("title", "Web Source"),
+                                "url": url,
+                                "snippet": r.get("body", "")[:350]
+                            })
+        except Exception:
+            pass
 
     # 5. Wikipedia Search if needed
     if len(results) < max_results:
@@ -754,7 +753,9 @@ class DetectionEngine:
 
         for sec_idx in sampled_indices:
             p = raw_paragraphs[sec_idx]
-            p_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', p)
+            p_norm = re.sub(r'([a-z])([A-Z])', r'\1 \2', p)
+            p_norm = re.sub(r'([A-Z]{2,})([a-z])', r'\1 \2', p_norm)
+            p_clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', p_norm)
             words = p_clean.split()
             if len(words) < 5:
                 continue
