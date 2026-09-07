@@ -205,45 +205,47 @@ def is_result_relevant(query_str: str, title_str: str, snippet_str: str) -> bool
 
 def multi_engine_web_search(query: str, max_results: int = 3) -> List[Dict[str, str]]:
     """
-    Combines Yahoo, Bing, Wikipedia, and DDG Lite with fast intelligent early exit.
-    Prioritizes Yahoo and Bing for speed and resilience against cloud IP throttling.
+    Combines Yahoo, Bing, Wikipedia, and DDG Lite with strict relevance filtering.
+    Guarantees that bot-decoy spam is never accepted.
     """
     results = []
 
-    # 1. Yahoo Search (unthrottled, fast, high accuracy for documentation)
-    y_res = search_yahoo(query, max_results=max_results)
-    for yr in y_res:
-        if not any(r["url"] == yr["url"] for r in results):
-            results.append(yr)
+    # 1. Wikipedia Action API (ultra-fast JSON endpoint, ~200ms, never blocked on cloud IPs)
+    w_res = wikipedia_search(query, max_results=2)
+    for wr in w_res:
+        if is_result_relevant(query, wr["title"], wr.get("snippet", "")):
+            if not any(r["url"] == wr["url"] for r in results):
+                results.append(wr)
 
-    # Return early if Yahoo found results
-    if len(results) >= 2:
+    if len(results) >= max_results:
         return results[:max_results]
 
-    # 2. Bing Search (extensive indexing and high-precision technical snippets)
-    if len(results) < max_results:
-        b_res = search_bing(query, max_results=max_results - len(results))
-        for br in b_res:
+    # 2. Bing Search (check relevance strictly to discard cloud-IP bot decoys)
+    b_res = search_bing(query, max_results=max_results)
+    for br in b_res:
+        if is_result_relevant(query, br["title"], br.get("snippet", "")):
             if not any(r["url"] == br["url"] for r in results):
                 results.append(br)
 
-    if len(results) >= 1:
+    if len(results) >= max_results:
         return results[:max_results]
 
-    # 3. Wikipedia Action API (ultra-fast JSON endpoint, ~200ms)
-    w_res = wikipedia_search(query, max_results=2)
-    for wr in w_res:
-        if not any(r["url"] == wr["url"] for r in results):
-            results.append(wr)
+    # 3. Yahoo Search (check relevance strictly)
+    y_res = search_yahoo(query, max_results=max_results)
+    for yr in y_res:
+        if is_result_relevant(query, yr["title"], yr.get("snippet", "")):
+            if not any(r["url"] == yr["url"] for r in results):
+                results.append(yr)
 
-    if len(results) >= 1:
+    if len(results) >= max_results:
         return results[:max_results]
 
-    # 4. Direct DDG Lite fallback only if literally 0 results found above
+    # 4. Direct DDG Lite fallback only if needed
     d_res = direct_duckduckgo_lite_search(query, max_results=max_results)
     for dr in d_res:
-        if not any(r["url"] == dr["url"] for r in results):
-            results.append(dr)
+        if is_result_relevant(query, dr["title"], dr.get("snippet", "")):
+            if not any(r["url"] == dr["url"] for r in results):
+                results.append(dr)
 
     return results[:max_results]
 
@@ -763,16 +765,29 @@ class DetectionEngine:
                 continue
 
             queries = []
+            # Query 0: Salient entity / proper noun query (e.g. "FastAPI", "Automobili Lamborghini", "PyTorch")
+            raw_p_words = p.split()
+            cap_entities = [w.strip('.,()[]{}"\'') for w in raw_p_words if w and w[0].isupper() and len(w) > 1 and w.lower() not in STOP_WORDS]
+            if cap_entities:
+                queries.append(" ".join(cap_entities[:3]))
+
             # Query 1: Lead 7 words
             queries.append(" ".join(words[:7]))
+
             # Query 2: Salient non-stop words (key entities and technical identifiers)
             salient_words = [w for w in words if w.lower() not in STOP_WORDS]
             if len(salient_words) >= 3:
                 queries.append(" ".join(salient_words[:6]))
-            # Query 3: Salient words from second half
+
+            # Query 3: Entity + documentation / overview if entity exists
+            if cap_entities:
+                queries.append(f"{cap_entities[0]} documentation")
+
+            # Query 4: Salient words from second half
             if len(salient_words) >= 8:
                 queries.append(" ".join(salient_words[4:10]))
-            # Query 4: 2nd sentence lead if multi-sentence
+
+            # Query 5: 2nd sentence lead if multi-sentence
             sents = split_sentences_clean(p)
             if len(sents) > 1:
                 s2_clean = re.sub(r'[^a-zA-Z0-9\s-]', ' ', sents[1])
