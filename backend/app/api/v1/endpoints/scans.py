@@ -27,7 +27,7 @@ def initiate_scan(
     # Create Scan record
     scan = Scan(
         document_id=document_id,
-        initiated_by=doc.user_id,
+        initiated_by=getattr(current_user, "id", None) or doc.user_id,
         status=ScanStatus.QUEUED,
         scan_mode="standard",
         current_step="Queued for analysis..."
@@ -55,10 +55,13 @@ def get_scan_result(scan_id: int, db: Session = Depends(get_db)):
     rep = dict(scan.report_data or {})
     doc = scan.document or db.query(Document).filter(Document.id == scan.document_id).first()
     
-    # Auto-generate missing line_analysis or readability on the fly
+    # Auto-generate or expand line_analysis and readability on the fly
     if scan.status == ScanStatus.COMPLETED and doc and doc.extracted_text:
-        updated = False
-        if not rep.get("line_analysis"):
+        stored_lines = rep.get("line_analysis") or []
+        doc_lines_approx = len(doc.extracted_text.splitlines())
+        needs_full_lines = not stored_lines or (len(stored_lines) < 250 and doc_lines_approx > 250)
+
+        if needs_full_lines:
             try:
                 from app.core.detection import generate_line_analysis
                 lines = generate_line_analysis(
@@ -69,7 +72,6 @@ def get_scan_result(scan_id: int, db: Session = Depends(get_db)):
                     ai_detection=rep.get("ai_detection", {})
                 )
                 rep["line_analysis"] = lines
-                updated = True
             except Exception as e:
                 print(f"Fallback line_analysis generation error for scan {scan_id}: {e}")
 
@@ -77,13 +79,8 @@ def get_scan_result(scan_id: int, db: Session = Depends(get_db)):
             try:
                 from app.core.readability import compute_readability_metrics
                 rep["readability"] = compute_readability_metrics(doc.extracted_text)
-                updated = True
             except Exception as e:
                 print(f"Fallback readability generation error for scan {scan_id}: {e}")
-
-        if updated:
-            scan.report_data = rep
-            db.commit()
 
     return {
         "id": scan.id,

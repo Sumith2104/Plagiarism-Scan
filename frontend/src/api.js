@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const isDevServer = typeof window !== 'undefined' && (window.location.port === '5173' || window.location.port === '3000');
+const isDevServer = typeof window !== 'undefined' && (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    Boolean(window.location.port && (window.location.port.startsWith('517') || window.location.port === '3000'))
+);
 const API_BASE_URL = import.meta.env.VITE_API_URL || (isDevServer ? `http://${window.location.hostname}:8000/api/v1` : '/api/v1');
 
 const api = axios.create({
@@ -25,6 +29,7 @@ export const authAPI = {
     },
     register: (email, password, fullName) =>
         api.post('/auth/register', null, { params: { email, password, full_name: fullName } }),
+    getMe: () => api.get('/auth/me'),
 };
 
 export const documentsAPI = {

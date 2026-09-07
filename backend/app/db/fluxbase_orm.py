@@ -247,7 +247,10 @@ class FluxbaseSession:
                 
                 set_str = ", ".join(set_clauses)
                 sql = f"UPDATE {table_name} SET {set_str} WHERE id = {obj_id};"
-                print(f"DEBUG COMMIT SQL: {sql}")
+                try:
+                    print(f"DEBUG COMMIT SQL: {sql}")
+                except Exception:
+                    pass
                 client.execute(sql)
                 
                 # Update snapshot to prevent duplicate updates
@@ -291,6 +294,8 @@ class FluxbaseSession:
                     col_name = col.expression.name
                 else:
                     col_name = str(col).split(".")[-1]
+                if hasattr(val, "value"):
+                    val = val.value
                 # Obfuscate values in update queries
                 encoded_val = encode_value(val)
                 if isinstance(encoded_val, str):
@@ -371,8 +376,12 @@ class FluxbaseSession:
         client.execute(sql)
         
         try:
-            res = client.execute("SELECT LAST_INSERT_ID() as last_id;")
-            if res:
+            res = client.execute(f"SELECT MAX(id) as last_id FROM {table_name};")
+            if res and res[0].get("last_id") is not None:
                 obj.id = int(res[0]["last_id"])
+                snapshot = {}
+                for key in obj.__mapper__.columns.keys():
+                    snapshot[key] = getattr(obj, key, None)
+                self._identity_map[(table_name, obj.id)] = (obj, snapshot)
         except Exception as e:
             logger.warning(f"Failed to fetch last insert id: {e}")

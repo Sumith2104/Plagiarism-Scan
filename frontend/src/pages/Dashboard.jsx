@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { documentsAPI, scansAPI } from '../api';
+import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import {
     Upload,
     FileText,
@@ -30,6 +32,8 @@ export default function Dashboard() {
     const [loadingCollusion, setLoadingCollusion] = useState(false);
     const [selectedDocIdsForCollusion, setSelectedDocIdsForCollusion] = useState([]);
     const navigate = useNavigate();
+    const { user, logout } = useAuth();
+    const notify = useNotification();
 
     useEffect(() => {
         loadDocuments();
@@ -44,6 +48,7 @@ export default function Dashboard() {
             setDocuments(response.data);
         } catch (err) {
             if (err.response?.status === 401) {
+                logout();
                 navigate('/');
             }
         }
@@ -58,6 +63,7 @@ export default function Dashboard() {
         if (!selectedFiles.length) return;
 
         setUploading(true);
+        notify.info('Upload Started', `Transferring ${selectedFiles.length} file(s) to processing engine...`);
         let successCount = 0;
         let failCount = 0;
 
@@ -79,19 +85,20 @@ export default function Dashboard() {
         loadDocuments();
 
         if (failCount === 0) {
-            alert(`Successfully uploaded ${successCount} document(s)!`);
+            notify.success('Upload Complete', `Successfully uploaded and indexed ${successCount} document(s)!`);
         } else {
-            alert(`Uploaded ${successCount} document(s). ${failCount} failed.`);
+            notify.warning('Upload Partially Succeeded', `Uploaded ${successCount} document(s). ${failCount} failed.`);
         }
     };
 
     const handleScan = async (documentId, scanMode = 'standard') => {
         try {
+            notify.info('Scan Initiated', 'Running dual-engine vector search & web distillation...');
             const response = await scansAPI.initiate(documentId, scanMode);
             navigate(`/report/${response.data.scan_id}`);
         } catch (err) {
             const errorMsg = err.response?.data?.detail || err.message || 'Unknown error occurred';
-            alert(`Scan failed: ${errorMsg}`);
+            notify.error('Scan Failed', errorMsg);
         }
     };
 
@@ -101,9 +108,9 @@ export default function Dashboard() {
         try {
             await documentsAPI.delete(documentId);
             setDocuments(documents.filter(d => d.id !== documentId));
-            alert('Document deleted successfully');
+            notify.success('Document Deleted', 'Document and vector embeddings removed successfully.');
         } catch (err) {
-            alert('Failed to delete document: ' + (err.response?.data?.detail || 'Unknown error'));
+            notify.error('Delete Failed', err.response?.data?.detail || 'Unknown error');
         }
     };
 
@@ -120,9 +127,10 @@ export default function Dashboard() {
         try {
             const res = await scansAPI.collusionMatrix(docIds && docIds.length >= 2 ? docIds : undefined);
             setCollusionData(res.data);
+            notify.success('Collusion Matrix Ready', 'Pairwise document similarity analyzed.');
         } catch (err) {
             console.error('Failed to load collusion matrix:', err);
-            alert(err.response?.data?.detail || 'Collusion matrix requires at least 2 indexed documents.');
+            notify.warning('Collusion Matrix Info', err.response?.data?.detail || 'Collusion matrix requires at least 2 indexed documents.');
         } finally {
             setLoadingCollusion(false);
         }
@@ -139,7 +147,7 @@ export default function Dashboard() {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
+        logout();
         navigate('/');
     };
 
@@ -171,18 +179,23 @@ export default function Dashboard() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
             {/* Modern Navbar */}
-            <nav className="bg-white/80 backdrop-blur-lg shadow-sm border-b border-gray-200/50 sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <nav className="bg-white/85 backdrop-blur-xl shadow-sm border-b border-gray-200/60 sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
                     <div className="flex justify-between items-center flex-wrap gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <Sparkles className="h-6 w-6 text-white" />
+                        <div className="flex items-center gap-3.5">
+                            <div className="w-11 h-11 rounded-2xl bg-white p-1 shadow-md border border-gray-200/80 flex items-center justify-center overflow-hidden ring-2 ring-indigo-500/20">
+                                <img
+                                    src="/logo-icon.png"
+                                    alt="PlagiaScan Logo"
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => { e.target.src = '/logo.png'; }}
+                                />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                <h1 className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 bg-clip-text text-transparent">
                                     PlagiaScan
                                 </h1>
-                                <p className="text-xs text-gray-500">Academic &amp; Forensic Integrity Platform</p>
+                                <p className="text-[11px] text-gray-500 font-medium">Academic &amp; Forensic Integrity Platform</p>
                             </div>
                         </div>
 
@@ -191,20 +204,41 @@ export default function Dashboard() {
                             <button
                                 onClick={handleOpenCollusionModal}
                                 disabled={indexedDocsCount < 2}
-                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center gap-2 px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 title={indexedDocsCount < 2 ? 'Upload at least 2 indexed documents to run collusion matrix' : 'Compare all documents pairwise for student collusion'}
                             >
                                 <Users className="h-4 w-4" />
-                                <span>Peer-to-Peer Collusion Matrix</span>
-                                <span className="bg-white/20 px-1.5 py-0.2 rounded text-[10px]">NEW</span>
+                                <span className="hidden sm:inline">Peer Collusion Matrix</span>
+                                <span className="bg-white/20 px-1.5 py-0.5 rounded text-[10px]">NEW</span>
                             </button>
+
+                            {/* Authenticated User Profile Badge */}
+                            {user && (
+                                <div className="flex items-center gap-2.5 px-3 py-1.5 bg-slate-100/80 border border-slate-200/80 rounded-xl shadow-xs">
+                                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+                                        {(user.full_name || user.email || 'U')[0].toUpperCase()}
+                                    </div>
+                                    <div className="text-left hidden md:block">
+                                        <p className="text-xs font-bold text-slate-800 leading-tight truncate max-w-[130px]">
+                                            {user.full_name || user.email.split('@')[0]}
+                                        </p>
+                                        <p className="text-[10px] text-slate-500 truncate max-w-[130px]">
+                                            {user.email}
+                                        </p>
+                                    </div>
+                                    <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 border border-indigo-200/60 hidden sm:inline-block">
+                                        {user.role || 'user'}
+                                    </span>
+                                </div>
+                            )}
 
                             <button
                                 onClick={handleLogout}
-                                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-all text-xs font-semibold"
+                                className="flex items-center gap-1.5 px-3 py-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200/60 rounded-xl transition-all text-xs font-bold shadow-xs"
+                                title="Sign out"
                             >
-                                <LogOut className="h-4 w-4" />
-                                <span>Logout</span>
+                                <LogOut className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">Logout</span>
                             </button>
                         </div>
                     </div>

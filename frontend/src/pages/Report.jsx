@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { scansAPI } from '../api';
+import { useNotification } from '../context/NotificationContext';
 import {
     ArrowLeft,
     AlertTriangle,
@@ -109,6 +110,7 @@ export default function Report() {
     const [copiedShareLink, setCopiedShareLink] = useState(false);
 
     const navigate = useNavigate();
+    const notify = useNotification();
 
     useEffect(() => {
         loadScan();
@@ -129,7 +131,7 @@ export default function Report() {
             setLoading(false);
         } catch (err) {
             console.error('Failed to load scan:', err);
-            alert('Failed to load scan');
+            notify.error('Scan Load Failed', 'Could not load the requested scan report.');
             navigate('/dashboard');
         }
     };
@@ -252,12 +254,14 @@ export default function Report() {
         const verifyUrl = `${window.location.protocol}//${window.location.host}/verify/${scanId}`;
         navigator.clipboard.writeText(verifyUrl);
         setCopiedShareLink(true);
+        notify.success('Link Copied', 'Public cryptographic verification link copied to clipboard!');
         setTimeout(() => setCopiedShareLink(false), 2500);
     };
 
     const handleCopyCitation = (text, formatKey) => {
         navigator.clipboard.writeText(text);
         setCopiedFormat(formatKey);
+        notify.success('Citation Copied', `${formatKey.toUpperCase()} academic citation copied to clipboard!`);
         setTimeout(() => setCopiedFormat(null), 2000);
     };
 
@@ -265,8 +269,8 @@ export default function Report() {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mb-4 animate-pulse shadow-lg">
-                        <ShieldCheck className="h-8 w-8 text-white" />
+                    <div className="w-16 h-16 rounded-2xl bg-white p-2 mx-auto mb-4 shadow-xl border border-gray-200/80 animate-pulse flex items-center justify-center">
+                        <img src="/logo-icon.png" alt="Loading..." className="w-full h-full object-contain" onError={(e) => { e.target.src = '/logo.png'; }} />
                     </div>
                     <p className="text-gray-700 text-lg font-semibold">Loading forensic report...</p>
                 </div>
@@ -296,14 +300,28 @@ export default function Report() {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 pb-16">
             {/* Sticky Header Navbar */}
             <nav className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200/80 sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between flex-wrap gap-3">
-                    <button
-                        onClick={() => navigate('/dashboard')}
-                        className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 hover:bg-gray-100 px-3.5 py-1.5 rounded-lg transition-all text-sm font-medium"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                        <span>Back to Dashboard</span>
-                    </button>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="flex items-center gap-1.5 text-gray-700 hover:text-indigo-600 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-all text-xs font-bold"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            <span>Dashboard</span>
+                        </button>
+                        <div className="h-5 w-[1px] bg-gray-200 hidden sm:block" />
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-xl bg-white p-0.5 shadow-sm border border-gray-200/80 flex items-center justify-center overflow-hidden ring-1 ring-indigo-500/20">
+                                <img
+                                    src="/logo-icon.png"
+                                    alt="PlagiaScan Logo"
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => { e.target.src = '/logo.png'; }}
+                                />
+                            </div>
+                            <span className="text-xs font-bold text-slate-800 hidden md:inline">Forensic Scan Report</span>
+                        </div>
+                    </div>
 
                     <div className="flex items-center gap-2.5 flex-wrap">
                         {/* Public Share / Verify Button */}

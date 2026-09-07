@@ -321,6 +321,11 @@ class DetectionEngine:
                 ai_detection=ai_analysis
             )
 
+            # Ensure line_analysis safely fits within cloud database payload constraints (<200KB)
+            # For large documents, store flagged lines in DB; full line text is generated on the fly by GET /scans/{id}
+            flagged_lines = [l for l in line_annotations if l.get("category") != "clean"]
+            db_lines = line_annotations if len(line_annotations) <= 200 else flagged_lines
+
             scan.report_data = {
                 "scan_mode": "standard",
                 "total_chunks": len(chunks),
@@ -333,13 +338,44 @@ class DetectionEngine:
                 "web_matches": web_matches[:10],
                 "ai_detection": ai_analysis,
                 "readability": readability_analysis,
-                "line_analysis": line_annotations
+                "line_analysis": db_lines
             }
+            scan.overall_score = overall_score
             scan.status = ScanStatus.COMPLETED
             scan.progress = 100
             scan.current_step = "Completed"
             self.db.commit()
             print(f"Scan {scan_id} done. Internal:{internal_score:.1f}% Web:{web_score:.1f}% Final:{overall_score}% AI:{ai_analysis.get('ai_probability')}%")
+
+            # Dispatch professional branded notification email with PlagiaScan logo
+            try:
+                from app.models.user import User
+                from app.core.email import send_scan_completed_email
+
+                target_user = None
+                if scan.initiated_by:
+                    target_user = self.db.query(User).filter(User.id == scan.initiated_by).first()
+                if not target_user and doc and doc.user_id:
+                    target_user = self.db.query(User).filter(User.id == doc.user_id).first()
+
+                target_email = target_user.email if (target_user and target_user.email) else settings.EMAIL_ADDRESS
+                target_name = target_user.full_name if (target_user and target_user.full_name) else "Researcher"
+
+                if target_email:
+                    doc_title = doc.filename if doc else f"Document #{scan.document_id}"
+                    send_scan_completed_email(
+                        to_email=target_email,
+                        full_name=target_name,
+                        document_title=doc_title,
+                        scan_id=scan.id,
+                        overall_score=overall_score,
+                        ai_probability=ai_analysis.get("ai_probability", 0),
+                        ai_label=ai_analysis.get("label", "Unknown"),
+                        web_matches_count=len(web_matches),
+                        scan_mode=getattr(scan, "scan_mode", "standard") or "standard"
+                    )
+            except Exception as mail_err:
+                print(f"Non-blocking scan notification email dispatch error: {mail_err}")
 
         except Exception as e:
             print(f"Scan failed: {e}")

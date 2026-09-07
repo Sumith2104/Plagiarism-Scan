@@ -90,6 +90,10 @@ import os
 
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIST_DIR = os.path.abspath(os.path.join(BACKEND_DIR, "../../frontend/dist"))
+IMAGES_DIR = os.path.abspath(os.path.join(BACKEND_DIR, "../../images"))
+
+if os.path.exists(IMAGES_DIR):
+    app.mount("/images", StaticFiles(directory=IMAGES_DIR), name="images")
 
 # Custom 404 Exception Handler for React Router SPA Fallback
 from fastapi.exception_handlers import http_exception_handler

@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # --- Email (for notifications) ---
     EMAIL_ADDRESS: Optional[str] = None
     EMAIL_PASSWORD: Optional[str] = None
+    SMTP_SERVER: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USE_SSL: bool = False
 
     @property
     def use_fluxbase(self) -> bool:

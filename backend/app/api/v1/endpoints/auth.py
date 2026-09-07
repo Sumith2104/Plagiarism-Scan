@@ -6,6 +6,7 @@ from app.db.session import get_db
 from app.core import auth
 from app.models.user import User
 from app.core.config import settings
+from app.api.deps import get_current_user
 
 router = APIRouter()
 
@@ -56,7 +57,36 @@ def register_user(
     from app.core.email import send_welcome_email
     background_tasks.add_task(send_welcome_email, new_user.email, new_user.full_name)
     
-    return {"id": new_user.id, "email": new_user.email, "message": "User registered successfully"}
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = auth.create_access_token(
+        subject=new_user.id, expires_delta=access_token_expires
+    )
+    return {
+        "id": new_user.id,
+        "email": new_user.email,
+        "full_name": new_user.full_name,
+        "access_token": access_token,
+        "token_type": "bearer",
+        "message": "User registered successfully"
+    }
+
+@router.get("/me", response_model=dict)
+def get_me(current_user: User = Depends(get_current_user)):
+    created_at_val = current_user.created_at
+    if hasattr(created_at_val, "isoformat"):
+        created_at_str = created_at_val.isoformat()
+    else:
+        created_at_str = str(created_at_val) if created_at_val else None
+
+    role_val = current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role or "user")
+
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "full_name": current_user.full_name or current_user.email.split("@")[0],
+        "role": role_val,
+        "created_at": created_at_str,
+    }
 
 @router.post("/login/google", response_model=dict)
 def login_google(

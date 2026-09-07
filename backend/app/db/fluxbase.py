@@ -33,33 +33,44 @@ class FluxbaseClient:
         return {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
+            "Connection": "close",
         }
 
     def execute(self, sql: str, silent: bool = False) -> List[Dict[str, Any]]:
         """
         Execute a raw SQL statement and return the rows.
         Returns an empty list for non-SELECT statements.
-        Raises RuntimeError on Fluxbase errors.
+        Automatically retries on transient network drops or socket resets.
+        Raises RuntimeError on persistent Fluxbase errors.
         """
+        import time
         payload = {
             "projectId": self.project_id,
             "query": sql,
         }
-        try:
-            resp = requests.post(
-                self.url,
-                json=payload,
-                headers=self._headers(),
-                timeout=30,
-            )
-            if resp.status_code != 200 and not silent:
-                print(f"Fluxbase Error HTTP {resp.status_code}: {resp.text}")
-            resp.raise_for_status()
-            data = resp.json()
-        except requests.RequestException as e:
-            if not silent:
-                print(f"Fluxbase network error: {e}")
-            raise RuntimeError(f"Fluxbase network error: {e}") from e
+        max_retries = 3
+        data = None
+
+        for attempt in range(1, max_retries + 1):
+            try:
+                resp = requests.post(
+                    self.url,
+                    json=payload,
+                    headers=self._headers(),
+                    timeout=30,
+                )
+                if resp.status_code != 200 and not silent:
+                    print(f"Fluxbase Error HTTP {resp.status_code}: {resp.text}")
+                resp.raise_for_status()
+                data = resp.json()
+                break
+            except requests.RequestException as e:
+                if attempt < max_retries:
+                    time.sleep(0.4 * attempt)
+                    continue
+                if not silent:
+                    print(f"Fluxbase network error after {max_retries} attempts: {e}")
+                raise RuntimeError(f"Fluxbase network error: {e}") from e
 
         if not data.get("success"):
             err = data.get("error", {})
